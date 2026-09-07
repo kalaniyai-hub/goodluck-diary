@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ગુડલક જમા-ઉધાર ડાયરી - MASTER SAAS</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Arial,"Noto Sans Gujarati",sans-serif;background:#f3f6fb;color:#222;padding:8px;}
+.container{width:100%;max-width:800px;margin:auto;}
+.header{background:linear-gradient(135deg,#0d6efd,#063b91);color:#fff;text-align:center;padding:12px 10px;border-radius:12px;margin-bottom:10px;position:relative;}
+.header h1{font-size:18px;margin-bottom:2px;}
+.header-phone{font-size:13px;color:#ffeb3b;font-weight:bold;margin-bottom:4px;}
+.header-meta{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;margin-top:4px;}
+.live-clock-box{background:#000;color:#fff;font-weight:bold;font-size:11px;padding:4px 8px;border-radius:6px;box-shadow:0 2px 5px rgba(0,0,0,.3);}
+.expiry-badge{font-size:10px;color:#ffeb3b;font-weight:bold;background:rgba(0,0,0,0.3);padding:4px 8px;border-radius:6px;}
+
+.nav{display:flex;gap:6px;margin-bottom:10px;}
+.btn{border:none;border-radius:7px;padding:8px 10px;font-size:13px;font-weight:bold;cursor:pointer;}
+.btn-primary{background:#0d6efd;color:#fff;}
+.btn-success{background:#198754;color:#fff;}
+.btn-danger{background:#dc3545;color:#fff;}
+.btn-warning{background:#ffc107;color:#000;}
+.btn-secondary{background:#6c757d;color:#fff;}
+.nav .btn{flex:1;}
+.card{background:#fff;border-radius:12px;padding:12px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,.05);}
+h3{color:#0d6efd;font-size:15px;margin-bottom:10px;}
+label{display:block;font-weight:bold;font-size:12px;margin:6px 0 3px;}
+input,select,textarea{width:100%;padding:8px;border:1px solid #d6dce5;border-radius:6px;font-size:13px;outline:none;background:#fff;}
+input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
+.row{display:flex;gap:6px;}
+.row>div{flex:1;}
+.hidden{display:none!important;}
+
+.quick-chip{background:#eef5ff;border:1px solid #b6d4fe;color:#0d6efd;padding:5px 8px;border-radius:15px;font-size:11px;font-weight:bold;cursor:pointer;display:inline-flex;align-items:center;gap:4px;margin:3px 2px;}
+.quick-chip:hover{background:#d0e1fd;}
+
+.ledger{background:#fff8e1;padding:6px;border-radius:8px;max-height:400px;overflow-y:auto;}
+.ledger-item{background:#fff;border-left:4px solid #ff9800;padding:8px;margin-bottom:6px;border-radius:6px;font-size:12px;}
+.voice-btn{background:#0d6efd;color:#fff;border:none;border-radius:6px;width:32px;height:32px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:9999;}
+.modal-box{background:#fff;width:94%;max-width:480px;padding:18px;border-radius:14px;box-shadow:0 4px 20px rgba(0,0,0,0.3);text-align:left;max-height:90vh;overflow-y:auto;}
+</style>
+</head>
+
+<body>
+
+<!-- ================= 1. AGENCY LOGIN SCREEN ================= -->
+<div id="authScreen" class="container" style="margin-top:30px;">
+  <div class="card" style="text-align:center; padding:25px;">
+    <h2 id="loginTitle" style="color:#0d6efd; margin-bottom:15px; cursor:pointer; user-select:none;" title="5 વાર ક્લિક કરો">🔐 જમા ઉધાર ડાયરી લૉગિન</h2>
+    
+    <label style="text-align:left;">Client ID</label>
+    <input id="loginIdInput" type="text" placeholder="દા.ત. goodluck" style="margin-bottom:8px;" autocapitalize="none" autocomplete="off">
+    
+    <label style="text-align:left;">Password</label>
+    <input id="loginKeyInput" type="password" placeholder="પાસવર્ડ નાખો" style="margin-bottom:15px;" autocapitalize="none" autocomplete="off">
+
+    <button id="loginBtn" class="btn btn-primary" type="button" style="width:100%; padding:10px; font-size:14px; background:#198754;">🚀 લૉગિન કરો</button>
+
+    <div style="margin-top:18px; border-top:1px dashed #ddd; padding-top:12px; font-size:12px; color:#555; text-align:center;">
+      📢 નવું લાઈસન્સ / રિન્યુ માટે સંપર્ક:<br>
+      <span style="font-weight:bold; color:#0d6efd;">📞 7878515174 | ☎️ 02844-222218</span>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 2. MASTER OWNER VERIFICATION MODAL ================= -->
+<div id="masterModal" class="modal-overlay hidden">
+  <div class="modal-box" style="text-align:center;">
+    <div style="font-size:28px; margin-bottom:2px;">👑</div>
+    <h3 style="color:#222; margin-bottom:2px; font-size:17px; text-align:center;">માસ્ટર ઓનર વેરીફિકેશન</h3>
+    <div style="font-size:11px; color:#666; margin-bottom:12px; text-align:center;">માસ્ટર પાસવર્ડ નાખો અથવા મોબાઈલ/ઈમેઈલ OTP મેળવો</div>
+    
+    <div style="text-align:left; margin-bottom:10px; background:#f8f9fa; padding:10px; border-radius:8px; border:1px solid #e9ecef;">
+      <label style="font-size:11px; font-weight:bold; color:#333; margin-bottom:3px;">માસ્ટર પાસવર્ડ:</label>
+      <input id="masterPinInput" type="password" placeholder="પાસવર્ડ નાખો" style="font-size:13px; margin-bottom:6px;">
+      <button id="verifyPinBtn" class="btn btn-primary" type="button" style="width:100%; padding:8px; font-size:13px; background:#0d6efd; margin-bottom:6px;">🔒 પાસવર્ડથી ખોલો</button>
+    </div>
+
+    <div style="text-align:left; margin-bottom:12px; background:#f8f9fa; padding:10px; border-radius:8px; border:1px solid #e9ecef;">
+      <label style="font-size:11px; font-weight:bold; color:#333; margin-bottom:3px;">અથવા મોબાઈલ / ઈમેઈલ દાખલ કરો (OTP માટે):</label>
+      <input id="masterOtpContact" type="text" placeholder="9876543210 અથવા email@gmail.com" style="font-size:13px; margin-bottom:6px;">
+      <button id="sendOtpBtn" class="btn btn-warning" type="button" style="width:100%; padding:8px; font-size:13px; background:#ffc107; color:#000; font-weight:bold; margin-bottom:6px;">👑 OTP મોકલો</button>
+    </div>
+
+    <button id="closeMasterModalBtn" class="btn btn-secondary" type="button" style="width:100%; padding:8px; background:#6c757d; font-size:13px;">કેન્સલ</button>
+  </div>
+</div>
+
+<!-- ================= 3. SUPER ADMIN MASTER PANEL ================= -->
+<div id="superAdminModal" class="container hidden" style="margin-top:20px;">
+  <div class="card" style="background:#fff3cd; border:1px solid #ffeeba;">
+    <h3 style="color:#856404;">👑 માસ્ટર ઓનર પેનલ (Customer Control & Edit)</h3>
+    
+    <div style="margin-bottom:8px;">
+      <label>🔍 એજન્ટ / કસ્ટમર શોધો (નામ કે મોબાઈલથી):</label>
+      <input id="saSearchInput" placeholder="એજન્ટનું નામ અથવા મોબાઈલ નંબર નાખો..." lang="gu">
+    </div>
+
+    <div style="background:#fff; padding:10px; border-radius:8px; border:1px solid #ddd; margin-bottom:10px;">
+      <h4 id="saFormTitle" style="font-size:13px; color:#0d6efd; margin-bottom:6px;">➕ નવો કસ્ટમર / એજન્ટ ઉમેરો</h4>
+      <input type="hidden" id="editingOriginalClientId" value="">
+      
+      <label>દુકાન/એજન્સી નામ</label>
+      <div style="display:flex; gap:4px; margin-bottom:6px;">
+        <input id="saNewName" placeholder="દુકાન/એજન્સી નામ" lang="gu">
+        <button class="voice-btn" type="button" onclick="startVoice('saNewName')">🎤</button>
+      </div>
+
+      <label>મોબાઈલ નંબર</label>
+      <div style="display:flex; gap:4px; margin-bottom:6px;">
+        <input id="saNewMobile" maxlength="10" placeholder="મોબાઈલ નંબર">
+        <button class="voice-btn" type="button" onclick="startVoice('saNewMobile')">🎤</button>
+      </div>
+
+      <div class="row">
+        <div><label>Client ID</label><input id="saNewId" placeholder="દા.ત. shop1" autocapitalize="none"></div>
+        <div><label>પાસવર્ડ</label><input id="saNewKey" placeholder="પાસવર્ડ"></div>
+      </div>
+
+      <div class="row" style="margin-top:6px;">
+        <div>
+          <label style="font-size:11px;">યુઝર લિમિટ (Devices):</label>
+          <select id="saNewDeviceLimit">
+            <option value="1">1 જણા (Single)</option>
+            <option value="2">2 જણા (Dual)</option>
+            <option value="3">3 જણા</option>
+            <option value="5">5 જણા</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:11px;">લાઈસન્સ દિવસો:</label>
+          <input id="saNewDays" type="number" value="30">
+        </div>
+      </div>
+
+      <div style="display:flex; gap:6px; margin-top:8px;">
+        <button id="saSaveBtn" class="btn btn-success" type="button" style="flex:1; background:#198754; padding:8px;">💾 સેવ કરો</button>
+        <button id="saCancelEditBtn" class="btn btn-secondary hidden" type="button" style="background:#6c757d; padding:8px;">રદ કરો</button>
+      </div>
+    </div>
+
+    <h4 style="margin-top:10px; font-size:13px; color:#333;">📋 તમામ કસ્ટમર લિસ્ટ અને કંટ્રોલ (<span id="totalAdminAgenciesCount">0</span>):</h4>
+    <div id="agencyListContainer" style="margin-top:6px; font-size:12px; background:#fff; padding:8px; border-radius:6px; max-height:280px; overflow-y:auto;"></div>
+
+    <button id="closeSuperAdminBtn" class="btn btn-secondary" type="button" style="width:100%; margin-top:10px; background:#6c757d; padding:10px;">🔒 બંધ કરો</button>
+  </div>
+</div>
+
+<!-- ================= 4. MAIN APP CONTAINER ================= -->
+<div id="mainAppContainer" class="container hidden">
+
+<div class="header">
+  <h1 id="agencyTitle">ગુડલક જમા-ઉધાર ડાયરી</h1>
+  <div id="agencyPhoneHeader" class="header-phone">📞 7878515174</div>
+  <div class="header-meta">
+    <span id="liveClockBoard" class="live-clock-box"></span>
+    <span id="agencyExpiryInfo" class="expiry-badge">ચાલુ</span>
+  </div>
+</div>
+
+<div class="nav" id="mainNavTab">
+  <button class="btn btn-primary" type="button" onclick="showView('entry')">✍️ નવી એન્ટ્રી</button>
+  <button class="btn btn-warning" type="button" onclick="showView('ledger')">📒 લેઝર & હિસાબ</button>
+  <button id="logoutBtn" class="btn btn-secondary" type="button">🔒 લૉગઆઉટ</button>
+</div>
+
+<!-- ================= ENTRY VIEW ================= -->
+<div id="entryView">
+<div class="card">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+    <h3 style="margin:0;">👤 ગ્રાહક અને વસ્તુની વિગત</h3>
+    <button class="btn btn-secondary" type="button" style="font-size:11px; padding:4px 8px; background:#6c757d;" onclick="clearEntryForm()">🧹 સાફ કરો / રીસેટ</button>
+  </div>
+  
+  <div class="row">
+    <div>
+      <label>સ્પિડ ડાયલ કોડ / શોર્ટ નેમ <span id="activeCodeBadge" style="color:#0d6efd; font-size:10px;"></span></label>
+      <input id="custShortCode" placeholder="દા.ત. 8818" oninput="loadCustomerByShortCode()" style="background:#eef5ff; font-weight:bold;">
+    </div>
+    <div>
+      <label>મોબાઈલ નંબર</label>
+      <input id="custMobile" maxlength="10" inputmode="numeric" placeholder="10 આંકડા" oninput="checkCustomerByMobile()">
+    </div>
+  </div>
+
+  <div class="row" style="margin-top:6px;">
+    <div>
+      <label>ગ્રાહકનું નામ</label>
+      <div style="display:flex;gap:4px;">
+        <input id="custName" placeholder="ગ્રાહકનું નામ" lang="gu">
+        <button class="voice-btn" type="button" onclick="startVoice('custName')">🎤</button>
+      </div>
+    </div>
+  </div>
+
+  <label>ગ્રાહકનું સરનામું</label>
+  <div style="display:flex;gap:4px;">
+    <textarea id="custAddress" rows="1" placeholder="સરનામું" lang="gu"></textarea>
+    <button class="voice-btn" type="button" onclick="startVoice('custAddress')">🎤</button>
+  </div>
+
+  <hr style="margin:10px 0; border:0; border-top:1px solid #eee;">
+
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+    <label style="margin:0;">⚡ ફાસ્ટ શોર્ટકટ આઈટમ્સ (ક્લિક: એડ, ✏️: એડિટ/ડિલીટ):</label>
+    <button class="btn btn-primary" type="button" style="font-size:10px; padding:3px 6px;" onclick="openAddShortcutModal()">➕ નવી આઈટમ ઉમેરો</button>
+  </div>
+  <div id="quickShortcutsContainer" style="margin-bottom:6px; display:flex; flex-wrap:wrap; gap:4px;"></div>
+
+  <label>વસ્તુનું નામ / વિગત</label>
+  <div style="display:flex;gap:4px;">
+    <input id="itemName" placeholder="વસ્તુનું નામ લખો" lang="gu">
+    <button class="voice-btn" type="button" onclick="startVoice('itemName')">🎤</button>
+  </div>
+
+  <div class="row" style="margin-top:6px; align-items:flex-end;">
+    <div style="flex:1.2;">
+      <label>ભાવ (₹)</label>
+      <input id="itemPrice" type="number" placeholder="₹35" oninput="calculateItemTotal()">
+    </div>
+    <div style="flex:1.2;">
+      <label>જથ્થો</label>
+      <input id="itemQty" type="number" value="1" step="any" placeholder="જથ્થો" oninput="calculateItemTotal()">
+    </div>
+    <div style="flex:1.6;">
+      <label>એકમ</label>
+      <select id="itemUnit">
+        <option value="નંગ">નંગ (Pcs)</option>
+        <option value="કિલો">કિલો (Kg)</option>
+        <option value="ગ્રામ">ગ્રામ (Gram)</option>
+        <option value="લિટર">લિટર (Ltr)</option>
+      </select>
+    </div>
+    <div style="flex:1.5;">
+      <label>કુલ રકમ (₹)</label>
+      <input id="itemTotalAmount" type="number" placeholder="0" readonly style="background:#f1f5f9; font-weight:bold; color:#198754;">
+    </div>
+  </div>
+
+  <label style="margin-top:8px;">નોંધ</label>
+  <div style="display:flex; gap:4px; margin-bottom:6px;">
+    <input id="itemNote" placeholder="વધારાની નોંધ..." lang="gu">
+    <button class="btn btn-warning" type="button" style="background:#ffc107; font-weight:bold; padding:0 12px;" onclick="addCurrentItemToCart()">➕ કાર્ટમાં ઉમેરો</button>
+  </div>
+
+  <div class="row">
+    <div>
+      <label>માલ/વસ્તુ લેવા આવનારનું નામ:</label>
+      <div style="display:flex; gap:4px;">
+        <input id="itemReceiverName" placeholder="દા.ત. અન્ય વ્યક્તિનું નામ" lang="gu">
+        <button class="voice-btn" type="button" onclick="startVoice('itemReceiverName')">🎤</button>
+      </div>
+    </div>
+    <div>
+      <label>માલ આપનાર/દુકાને હાજર વ્યક્તિ:</label>
+      <div style="display:flex; gap:4px;">
+        <input id="itemGiverName" placeholder="દા.ત. સ્ટાફ કે માલિકનું નામ" lang="gu">
+        <button class="voice-btn" type="button" onclick="startVoice('itemGiverName')">🎤</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="currentCartContainer" style="margin-top:10px;" class="hidden">
+    <div style="font-weight:bold; font-size:12px; color:#198754; margin-bottom:4px;">🛒 આ ઓર્ડરની ઉમેરેલી વસ્તુઓ:</div>
+    <div id="cartItemsList" style="background:#f8f9fa; padding:6px; border-radius:6px; max-height:150px; overflow-y:auto; font-size:11px;"></div>
+    <div style="display:flex; justify-content:space-between; margin-top:6px; font-weight:bold; font-size:13px; color:#0d6efd;">
+      <span>કુલ ઓર્ડર રકમ:</span>
+      <span id="cartGrandTotal">₹0.00</span>
+    </div>
+  </div>
+
+  <button class="btn btn-primary" type="button" style="width:100%; margin-top:12px; padding:10px; font-size:14px; background:#0d6efd;" onclick="saveEntryOnly()">💾 ખાલી સેવ કરો (ડાયરીમાં)</button>
+  <button class="btn btn-success" type="button" style="width:100%; margin-top:6px; padding:10px; font-size:15px; background:#198754;" onclick="saveEntryAndSendWhatsApp()">📲 સેવ કરો અને WhatsApp મોકલો</button>
+</div>
+</div>
+
+<!-- ================= LEDGER & REPORT VIEW ================= -->
+<div id="ledgerView" class="hidden">
+
+<div class="card">
+  <h3>📒 જમા-ઉધાર હિસાબ અને ડાયરી</h3>
+  
+  <div style="background:linear-gradient(135deg,#0d6efd,#063b91); color:#fff; padding:10px; border-radius:8px; margin-bottom:8px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+      <h4 style="font-size:12px; margin:0; color:#ffeb3b;">👥 કુલ સક્રિય ગ્રાહકો (Clients)</h4>
+      <div style="font-size:18px; font-weight:bold;"><span id="totalClientsCount">0</span></div>
+    </div>
+    <div id="activeClientsListPreview" style="font-size:11px; background:rgba(0,0,0,0.2); padding:6px; border-radius:6px; max-height:80px; overflow-y:auto;"></div>
+  </div>
+
+  <div style="background:linear-gradient(135deg,#ff9800,#f57c00); color:#fff; padding:10px; border-radius:8px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+    <div>
+      <h4 style="font-size:12px; margin:0; color:#fff;">📊 કુલ બાકી ઉધાર</h4>
+    </div>
+    <div style="font-size:18px; font-weight:bold;">₹ <span id="totalOutstandingDisplay">0.00</span></div>
+  </div>
+
+  <div style="margin-bottom:6px;">
+    <label>🔍 ગ્રાહક શોધો (નામ અથવા નંબર)</label>
+    <input id="ledgerSearch" placeholder="નંબર અથવા નામ લખો..." lang="gu" oninput="loadLedger()">
+  </div>
+
+  <div style="display:flex;gap:4px;margin:6px 0">
+    <button class="btn btn-primary" type="button" style="flex:1;padding:6px" onclick="setLedger('baki')">🔴 બાકી હિસાબ</button>
+    <button class="btn btn-success" type="button" style="flex:1;padding:6px" onclick="setLedger('jama')">🟢 જમા થયેલ</button>
+    <button class="btn btn-danger" type="button" style="flex:1;padding:6px" onclick="setLedger('deleted')">🗑️ ડિલીટ હિસ્ટ્રી</button>
+  </div>
+  
+  <div class="ledger" id="ledgerList">કોઈ રેકોર્ડ નથી.</div>
+</div>
+
+</div>
+
+</div>
+
+<!-- ADD / EDIT SHORTCUT MODAL -->
+<div id="addShortcutModal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <h3 style="color:#0d6efd; text-align:center; margin-bottom:10px;">⚡ શોર્ટકટ આઈટમ ઉમેરો/સુધારો</h3>
+    <input type="hidden" id="editShortIndex" value="-1">
+    <label>આઈટમનું નામ:</label>
+    <input id="newShortName" placeholder="દા.ત. માવો" lang="gu">
+    <label>ભાવ (₹):</label>
+    <input id="newShortPrice" type="number" placeholder="દા.ત. 35">
+    <div style="display:flex; gap:6px; margin-top:12px;">
+      <button class="btn btn-success" type="button" style="flex:1; padding:8px;" onclick="saveShortcutData()">💾 સેવ કરો</button>
+      <button id="delShortBtn" class="btn btn-danger hidden" type="button" style="padding:8px;" onclick="deleteShortcutData()">🗑️ ડિલીટ</button>
+      <button class="btn btn-secondary" type="button" style="background:#6c757d; padding:8px;" onclick="closeAddShortcutModal()">કેન્સલ</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT ORDER MODAL -->
+<div id="editOrderModal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <h3 style="color:#0d6efd; text-align:center; margin-bottom:6px;">✏️ ઓર્ડર / બિલ એડિટ કરો</h3>
+    <input type="hidden" id="editOrderMobile">
+    <div style="display:flex; gap:6px; margin-bottom:8px;">
+      <div style="flex:1;"><label>ગ્રાહકનું નામ:</label><input id="editOrderName" readonly style="background:#f8f9fa;" lang="gu"></div>
+      <div style="flex:1;"><label>મોબાઈલ નંબર:</label><input id="editOrderMobDisplay" readonly style="background:#f8f9fa;"></div>
+    </div>
+    
+    <label style="margin-bottom:4px;">📦 આ ઓર્ડરની વસ્તુઓ અને જથ્થો:</label>
+    <div id="editOrderItemsContainer" style="max-height:220px; overflow-y:auto; background:#f8f9fa; padding:8px; border-radius:6px; margin-bottom:10px;"></div>
+
+    <div style="background:#e8f5e9; padding:8px; border-radius:6px; display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+      <b style="color:#198754; font-size:13px;">નવું ફાઇનલ બિલ:</b>
+      <b id="editOrderFinalTotal" style="color:#198754; font-size:15px;">₹ 0.00</b>
+    </div>
+
+    <div style="display:flex; gap:6px;">
+      <button class="btn btn-success" type="button" style="flex:1; background:#198754; padding:9px;" onclick="saveEditedOrderChanges()">💾 સેવ કરીને WhatsApp મોકલો</button>
+      <button class="btn btn-secondary" type="button" style="background:#6c757d; padding:9px;" onclick="closeEditOrderModal()">કેન્સલ</button>
+    </div>
+  </div>
+</div>
+
+<!-- CUSTOMER STATEMENT MODAL -->
+<div id="customerStatementModal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <h3 id="statementTitle" style="color:#0d6efd; text-align:center; margin-bottom:6px;">👤 ગ્રાહક સ્ટેટમેન્ટ</h3>
+    <div id="statementBody" style="max-height:300px; overflow-y:auto; background:#f8f9fa; padding:8px; border-radius:6px; font-size:12px; margin-bottom:10px;"></div>
+    <div style="display:flex; gap:6px;">
+      <button class="btn btn-success" type="button" style="flex:1; background:#25D366; color:#fff;" onclick="sendCustomerFullStatementWhatsApp()">📲 આખો હિસાબ WhatsApp મોકલો</button>
+      <button class="btn btn-secondary" type="button" style="background:#6c757d;" onclick="closeStatementModal()">બંધ કરો</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+  import { getFirestore, collection, getDocs, setDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBh03PJudIpRbFo81nW4F3epdqUqwHSa4U",
+    authDomain: "goodluckwholesalesaas.firebaseapp.com",
+    projectId: "goodluckwholesalesaas",
+    storageBucket: "goodluckwholesalesaas.firebasestorage.app",
+    messagingSenderId: "1002894629732",
+    appId: "1:1002894629732:web:0b7726da1299d3e0c0f871",
+    measurementId: "G-8GWGY68XX2"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  window.db = getFirestore(app);
+
+  function getFormattedDateTime(dateInput) {
+    try {
+      let dObj = new Date(dateInput);
+      if (isNaN(dObj.getTime())) dObj = new Date();
+      let d = String(dObj.getDate()).padStart(2, '0');
+      let m = String(dObj.getMonth() + 1).padStart(2, '0');
+      let y = dObj.getFullYear();
+      let dayStr = dObj.toLocaleDateString("gu-IN", { weekday: 'long' });
+      let timeStr = dObj.toLocaleTimeString("gu-IN", { hour: '2-digit', minute: '2-digit' });
+      return {
+        date: `${d}/${m}/${y}`,
+        day: dayStr,
+        time: timeStr,
+        full: `${d}/${m}/${y} (${dayStr}), સમય: ${timeStr}`
+      };
+    } catch(e) {
+      return { date: "07/09/2026", day: "સોમવાર", time: "12:40 PM", full: "07/09/2026 (સોમવાર), સમય: 12:40 PM" };
+    }
+  }
+
+  window.agencies = [];
+  window.activeAgencyKey = null;
+  window.currentAgencyData = null;
+  window.ledger = [];
+  window.ledgerTab = "baki";
+  window.settings = { name: "ગુડલક જમા-ઉધાર ડાયરી", whatsapp: "7878515174" };
+  window.shortcuts = [
+    { name: "માવો", price: 35 },
+    { name: "પાણીની બોટલ", price: 20 }
+  ];
+  window.customerSpeedDial = {}; 
+  window.activeCartItems = []; 
+
+  window.loadAllAgenciesFromCloud = async function() {
+    try {
+      const snap = await getDocs(collection(window.db, "global_system_jama_udhar_agencies"));
+      window.agencies = [];
+      snap.forEach(docSnap => { window.agencies.push(docSnap.data()); });
+
+      if(window.agencies.length === 0){
+        let defaultAg = { name: "ગુડલક જમા-ઉધાર ડાયરી", mobile: "7878515174", clientId: "goodluck", key: "123456", blocked: false, expiryDays: 30, deviceLimit: 1, activeDevices: [], paymentsLog: {} };
+        await setDoc(doc(window.db, "global_system_jama_udhar_agencies", defaultAg.clientId), defaultAg);
+        window.agencies.push(defaultAg);
+      }
+    } catch(e) {
+      window.agencies = [{ name: "ગુડલક જમા-ઉધાર ડાયરી", mobile: "7878515174", clientId: "goodluck", key: "123456", blocked: false, expiryDays: 30, deviceLimit: 1, activeDevices: [], paymentsLog: {} }];
+    }
+  }
+
+  let secretClickCount = 0;
+  document.getElementById("loginTitle").addEventListener("click", function(){
+    secretClickCount++;
+    if(secretClickCount >= 5){
+      secretClickCount = 0;
+      let modal = document.getElementById("masterModal");
+      if(modal) modal.classList.remove("hidden");
+    }
+  });
+
+  window.closeMasterModal = function(){
+    document.getElementById("masterModal").classList.add("hidden");
+  }
+
+  document.getElementById("verifyPinBtn").addEventListener("click", async function(){
+    let pin = document.getElementById("masterPinInput").value.trim();
+    if(pin === "admin123@8818"){
+      window.closeMasterModal();
+      document.getElementById("authScreen").classList.add("hidden");
+      document.getElementById("superAdminModal").classList.remove("hidden");
+      await window.loadAllAgenciesFromCloud();
+      window.loadAgencyListInAdmin();
+    } else {
+      alert("❌ ખોટો પાસવર્ડ!");
+    }
+  });
+
+  document.getElementById("sendOtpBtn").addEventListener("click", function(){
+    let contact = document.getElementById("masterOtpContact").value.trim();
+    if(!contact){ alert("મોબાઈલ નંબર અથવા ઈમેઈલ નાખો."); return; }
+    let generatedOtp = Math.floor(100000 + Math.random() * 900000);
+    alert(`📲 OTP મોકલવામાં આવ્યો છે: ${generatedOtp} (ડેમો માટે)`);
+    let userOtp = prompt("મળેલ 6 આંકડાનો OTP નાખો:", "");
+    if(userOtp && userOtp.trim() === String(generatedOtp)){
+      window.closeMasterModal();
+      document.getElementById("authScreen").classList.add("hidden");
+      document.getElementById("superAdminModal").classList.remove("hidden");
+      window.loadAllAgenciesFromCloud().then(() => {
+        window.loadAgencyListInAdmin();
+      });
+      alert("✅ OTP વેરિફિકેશન સફળ!");
+    } else if(userOtp) {
+      alert("❌ ખોટો OTP!");
+    }
+  });
+
+  document.getElementById("closeMasterModalBtn").addEventListener("click", window.closeMasterModal);
+  document.getElementById("closeSuperAdminBtn").addEventListener("click", function(){
+    document.getElementById("superAdminModal").classList.add("hidden");
+    document.getElementById("authScreen").classList.remove("hidden");
+  });
+
+  document.getElementById("saSaveBtn").addEventListener("click", async function(){
+    let originalId = document.getElementById("editingOriginalClientId").value.trim();
+    let name = document.getElementById("saNewName").value.trim();
+    let mobile = document.getElementById("saNewMobile").value.trim();
+    let clientId = document.getElementById("saNewId").value.trim().toLowerCase();
+    let key = document.getElementById("saNewKey").value.trim();
+    let deviceLimit = parseInt(document.getElementById("saNewDeviceLimit").value) || 1;
+    let expiryDays = parseInt(document.getElementById("saNewDays").value) || 30;
+
+    if(!name || !mobile || !clientId || !key){ alert("બધી માહિતી ભરો."); return; }
+
+    let existingAg = window.agencies.find(a => a.clientId === clientId);
+    if(existingAg && originalId && originalId !== clientId){
+      alert("❌ આ Client ID પહેલેથી હાજર છે!");
+      return;
+    }
+
+    let targetId = originalId ? originalId : clientId;
+    let oldAg = window.agencies.find(a => a.clientId === targetId);
+
+    let agObj = { 
+      name, 
+      mobile, 
+      clientId, 
+      key, 
+      blocked: oldAg ? oldAg.blocked : false, 
+      expiryDays: expiryDays,
+      deviceLimit: deviceLimit,
+      activeDevices: oldAg ? (oldAg.activeDevices || []) : [],
+      paymentsLog: oldAg ? (oldAg.paymentsLog || {}) : {}
+    };
+
+    if(originalId && originalId !== clientId){
+      await deleteDoc(doc(window.db, "global_system_jama_udhar_agencies", originalId));
+    }
+
+    await setDoc(doc(window.db, "global_system_jama_udhar_agencies", clientId), agObj);
+    alert("✅ એજન્સી સફળતાપૂર્વક સેવ/અપડેટ થઈ ગઈ!");
+    
+    window.cancelAgencyEdit();
+    await window.loadAllAgenciesFromCloud();
+    window.loadAgencyListInAdmin();
+  });
+
+  window.editAgencyFromAdmin = function(clientId){
+    let ag = window.agencies.find(a => a.clientId === clientId);
+    if(!ag) return;
+    document.getElementById("editingOriginalClientId").value = ag.clientId;
+    document.getElementById("saNewName").value = ag.name;
+    document.getElementById("saNewMobile").value = ag.mobile;
+    document.getElementById("saNewId").value = ag.clientId;
+    document.getElementById("saNewKey").value = ag.key;
+    document.getElementById("saNewDeviceLimit").value = ag.deviceLimit || 1;
+    document.getElementById("saNewDays").value = ag.expiryDays || 30;
+    document.getElementById("saFormTitle").innerText = "✏️ એજન્સી / કસ્ટમર એડિટ કરો";
+    document.getElementById("saSaveBtn").innerText = "💾 સેવ કરો";
+    document.getElementById("saCancelEditBtn").classList.remove("hidden");
+  }
+
+  window.cancelAgencyEdit = function(){
+    document.getElementById("editingOriginalClientId").value = "";
+    document.getElementById("saNewName").value = "";
+    document.getElementById("saNewMobile").value = "";
+    document.getElementById("saNewId").value = "";
+    document.getElementById("saNewKey").value = "";
+    document.getElementById("saNewDeviceLimit").value = "1";
+    document.getElementById("saNewDays").value = "30";
+    document.getElementById("saFormTitle").innerText = "➕ નવો કસ્ટમર / એજન્ટ ઉમેરો";
+    document.getElementById("saSaveBtn").innerText = "💾 સેવ કરો";
+    document.getElementById("saCancelEditBtn").classList.add("hidden");
+  }
+  document.getElementById("saCancelEditBtn").addEventListener("click", window.cancelAgencyEdit);
+
+  window.loadAgencyListInAdmin = function(){
+    let container = document.getElementById("agencyListContainer");
+    if(!container) return;
+    container.innerHTML = "";
+    let search = (document.getElementById("saSearchInput")?.value || "").toLowerCase().trim();
+
+    let list = window.agencies;
+    if(search){
+      list = list.filter(a => a.name.toLowerCase().includes(search) || a.mobile.includes(search) || a.clientId.includes(search));
+    }
+
+    document.getElementById("totalAdminAgenciesCount").innerText = list.length;
+
+    list.forEach(ag => {
+      let isBlocked = ag.blocked ? `<span style="color:red; font-weight:bold;">[બ્લોક કરેલ]</span>` : `<span style="color:green; font-weight:bold;">[ચાલુ]</span>`;
+      container.innerHTML += `
+        <div style="background:#f8f9fa; border:1px solid #ddd; padding:8px; border-radius:6px; margin-bottom:6px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <b>${ag.name}</b> ${isBlocked}
+          </div>
+          <div style="font-size:11px; color:#555; margin-top:2px;">
+            🔑 ID: <code>${ag.clientId}</code> | Pass: <code>${ag.key}</code><br>
+            📞 ${ag.mobile} | ⏱️ લાઈસન્સ દિવસો: ${ag.expiryDays || 30} | 📱 યુઝર્સ: ${ag.activeDevices?.length || 0}/${ag.deviceLimit || 1}
+          </div>
+          <div style="display:flex; gap:4px; margin-top:6px; flex-wrap:wrap;">
+            <button class="btn btn-primary" type="button" style="font-size:10px; padding:3px 6px; background:#0d6efd;" onclick="editAgencyFromAdmin('${ag.clientId}')">✏️ એડિટ</button>
+            <button class="btn btn-success" type="button" style="font-size:10px; padding:3px 6px; background:#198754;" onclick="extendAgencyDays('${ag.clientId}', 30)">+30 દિવસ</button>
+            <button class="btn btn-warning" type="button" style="font-size:10px; padding:3px 6px; background:#ffc107; color:#000;" onclick="extendAgencyDays('${ag.clientId}', -30)">-30 દિવસ</button>
+            <button class="btn btn-primary" type="button" style="font-size:10px; padding:3px 6px; background:#6c757d;" onclick="toggleBlockAgency('${ag.clientId}', ${!ag.blocked})">${ag.blocked ? '🟢 અનબ્લોક' : '🔴 બ્લોક'}</button>
+            <button class="btn btn-warning" type="button" style="font-size:10px; padding:3px 6px; background:#fd7e14; color:#fff;" onclick="resetAgencyDevices('${ag.clientId}')">🔄 Reset Dev</button>
+            <button class="btn btn-danger" type="button" style="font-size:10px; padding:3px 6px; background:#dc3545;" onclick="deleteAgencyFromAdmin('${ag.clientId}')">🗑️ ડીલીટ</button>
+          </div>
+        </div>`;
+    });
+  }
+
+  document.getElementById("saSearchInput").addEventListener("input", function(){
+    window.loadAgencyListInAdmin();
+  });
+
+  window.extendAgencyDays = async function(clientId, days){
+    let ag = window.agencies.find(a => a.clientId === clientId);
+    if(ag){
+      ag.expiryDays = Math.max(0, (parseInt(ag.expiryDays) || 30) + days);
+      await setDoc(doc(window.db, "global_system_jama_udhar_agencies", clientId), ag);
+      window.loadAgencyListInAdmin();
+      alert(`✅ લાઈસન્સ સમય અપડેટ થયો!`);
+    }
+  }
+
+  window.resetAgencyDevices = async function(clientId){
+    let ag = window.agencies.find(a => a.clientId === clientId);
+    if(ag){
+      ag.activeDevices = [];
+      await setDoc(doc(window.db, "global_system_jama_udhar_agencies", clientId), ag);
+      window.loadAgencyListInAdmin();
+      alert(`✅ ડિવાઈસ લિમિટ રીસેટ થઈ ગઈ છે!`);
+    }
+  }
+
+  window.toggleBlockAgency = async function(clientId, blockStatus){
+    let ag = window.agencies.find(a => a.clientId === clientId);
+    if(ag){
+      ag.blocked = blockStatus;
+      await setDoc(doc(window.db, "global_system_jama_udhar_agencies", clientId), ag);
+      window.loadAgencyListInAdmin();
+      alert(blockStatus ? "🔴 એજન્સી બ્લોક કરવામાં આવી છે!" : "🟢 એજન્સી અનબ્લોક કરવામાં આવી છે!");
+    }
+  }
+
+  window.deleteAgencyFromAdmin = async function(clientId){
+    if(!confirm("આ એજન્સીને કાયમ માટે ડિલીટ કરવી છે?")) return;
+    await deleteDoc(doc(window.db, "global_system_jama_udhar_agencies", clientId));
+    window.agencies = window.agencies.filter(a => a.clientId !== clientId);
+    window.loadAgencyListInAdmin();
+    alert("✅ એજન્સી ડિલીટ થઈ ગઈ!");
+  }
+
+  window.onload = async function(){
+    setInterval(() => {
+      let now = new Date();
+      let dt = getFormattedDateTime(now);
+      let clockEl = document.getElementById("liveClockBoard");
+      if(clockEl) clockEl.innerText = `📅 ${dt.date} (${dt.day}) | ⏰ ${dt.time}`;
+    }, 1000);
+
+    await window.loadAllAgenciesFromCloud();
+    let activeKey = localStorage.getItem("jama_udhar_active_key");
+    if(activeKey){
+      let currentAg = window.agencies.find(a => a.clientId === activeKey || a.key === activeKey);
+      if(currentAg){
+        if(currentAg.blocked){ alert("❌ આપનું લાઈસન્સ બ્લોક થયેલ છે."); return; }
+        window.activeAgencyKey = currentAg.clientId || currentAg.key;
+        document.getElementById("authScreen").classList.add("hidden");
+        document.getElementById("mainAppContainer").classList.remove("hidden");
+        await window.initFirebaseApp(currentAg);
+      }
+    }
+  };
+
+  document.getElementById("loginBtn").addEventListener("click", async function(){
+    await window.loadAllAgenciesFromCloud();
+    let inputId = document.getElementById("loginIdInput").value.trim().toLowerCase();
+    let inputKey = document.getElementById("loginKeyInput").value.trim();
+    let found = window.agencies.find(a => (a.clientId === inputId || a.name.toLowerCase() === inputId) && String(a.key).trim() === String(inputKey));
+    
+    if(found){
+      if(found.blocked){ alert("❌ આ એજન્સી બ્લોક કરવામાં આવી છે!"); return; }
+      
+      let deviceId = localStorage.getItem("jama_device_uuid");
+      if(!deviceId){
+        deviceId = 'dev_' + Math.random().toString(36).substring(2, 11);
+        localStorage.setItem("jama_device_uuid", deviceId);
+      }
+
+      if(!found.activeDevices) found.activeDevices = [];
+      if(!found.activeDevices.includes(deviceId)){
+        if(found.activeDevices.length >= (found.deviceLimit || 1)){
+          alert(`❌ મહત્તમ યુઝર લિમિટ (${found.deviceLimit || 1}) પૂરી થઈ ગઈ છે! કૃપા કરીને એડમિનનો સંપર્ક કરો.`);
+          return;
+        }
+        found.activeDevices.push(deviceId);
+        await setDoc(doc(window.db, "global_system_jama_udhar_agencies", found.clientId), found);
+      }
+
+      localStorage.setItem("jama_udhar_active_key", found.clientId || found.key);
+      window.activeAgencyKey = found.clientId || found.key;
+      document.getElementById("authScreen").classList.add("hidden");
+      document.getElementById("mainAppContainer").classList.remove("hidden");
+      await window.initFirebaseApp(found);
+      alert(`✅ સ્વાગત છે, ${found.name}!`);
+    } else {
+      alert("❌ ખોટો Client ID અથવા પાસવર્ડ!");
+    }
+  });
+
+  document.getElementById("logoutBtn").addEventListener("click", function(){
+    localStorage.removeItem("jama_udhar_active_key");
+    document.getElementById("mainAppContainer").classList.add("hidden");
+    document.getElementById("authScreen").classList.remove("hidden");
+  });
+
+  window.initFirebaseApp = async function(agencyObj){
+    window.currentAgencyData = agencyObj;
+    window.settings.name = agencyObj.name;
+    window.settings.whatsapp = agencyObj.mobile;
+    document.getElementById("agencyTitle").innerText = window.settings.name;
+    document.getElementById("agencyPhoneHeader").innerText = "📞 " + window.settings.whatsapp;
+    document.getElementById("agencyExpiryInfo").innerText = `${agencyObj.expiryDays || 30} દિવસ બાકી`;
+    await window.loadDataFromFirebase();
+    window.renderShortcuts();
+    window.loadLedger();
+  }
+
+  window.loadDataFromFirebase = async function(){
+    let storeKey = window.currentAgencyData.clientId || window.currentAgencyData.key;
+    try {
+      const ledSnap = await getDocs(collection(window.db, `jama_udhar_${storeKey}_ledger`));
+      window.ledger = [];
+      ledSnap.forEach((doc) => { window.ledger.push(doc.data()); });
+
+      let savedShortcuts = localStorage.getItem(`jama_shortcuts_${storeKey}`);
+      if(savedShortcuts) window.shortcuts = JSON.parse(savedShortcuts);
+
+      let savedSpeedDial = localStorage.getItem(`jama_speeddial_${storeKey}`);
+      if(savedSpeedDial) window.customerSpeedDial = JSON.parse(savedSpeedDial);
+    } catch(e) {
+      window.ledger = JSON.parse(localStorage.getItem("jama_udhar_ledger_" + storeKey)) || [];
+    }
+  }
+
+  window.saveLedgerToFirebase = async function(rec){
+    let storeKey = window.currentAgencyData.clientId || window.currentAgencyData.key;
+    await setDoc(doc(window.db, `jama_udhar_${storeKey}_ledger`, String(rec.id)), rec);
+  }
+
+  window.showView = function(view){
+    document.getElementById("entryView").classList.toggle("hidden", view!=="entry");
+    document.getElementById("ledgerView").classList.toggle("hidden", view!=="ledger");
+    if(view==="ledger") window.loadLedger();
+    window.scrollTo({top:0, behavior:"smooth"});
+  }
+
+  window.startVoice = function(fieldId){
+    if(!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)){ alert("વોઈસ ટાઇપિંગ સપોર્ટ નથી."); return; }
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'gu-IN';
+    recognition.start();
+    recognition.onresult = function(event){
+      let el = document.getElementById(fieldId);
+      if(el) {
+        el.value = event.results[0][0].transcript;
+        if(fieldId === 'custMobile') window.checkCustomerByMobile();
+      }
+    };
+  }
+
+  window.loadCustomerByShortCode = function(){
+    let code = document.getElementById("custShortCode").value.trim().toLowerCase();
+    let badge = document.getElementById("activeCodeBadge");
+    if(window.customerSpeedDial[code]){
+      let c = window.customerSpeedDial[code];
+      document.getElementById("custMobile").value = c.mobile;
+      document.getElementById("custName").value = c.name;
+      document.getElementById("custAddress").value = c.address || "";
+      badge.innerText = ` (👤 ${c.name})`;
+    } else {
+      badge.innerText = "";
+    }
+  }
+
+  window.checkCustomerByMobile = function(){
+    let mobile = document.getElementById("custMobile").value.trim();
+    if(mobile.length === 10){
+      let foundRec = window.ledger.slice().reverse().find(x => x.mobile === mobile && !x.deleted);
+      if(foundRec){
+        if(!document.getElementById("custName").value) document.getElementById("custName").value = foundRec.custName || "";
+        if(!document.getElementById("custAddress").value) document.getElementById("custAddress").value = foundRec.address || "";
+        if(!document.getElementById("custShortCode").value && foundRec.shortCode) document.getElementById("custShortCode").value = foundRec.shortCode;
+      }
+    }
+  }
+
+  window.clearEntryForm = function(){
+    document.getElementById("custShortCode").value = "";
+    document.getElementById("custMobile").value = "";
+    document.getElementById("custName").value = "";
+    document.getElementById("custAddress").value = "";
+    document.getElementById("activeCodeBadge").innerText = "";
+    document.getElementById("itemName").value = "";
+    document.getElementById("itemPrice").value = "";
+    document.getElementById("itemQty").value = "1";
+    document.getElementById("itemTotalAmount").value = "";
+    document.getElementById("itemNote").value = "";
+    document.getElementById("itemReceiverName").value = "";
+    document.getElementById("itemGiverName").value = "";
+    window.activeCartItems = [];
+    document.getElementById("currentCartContainer").classList.add("hidden");
+  }
+
+  window.renderShortcuts = function(){
+    let container = document.getElementById("quickShortcutsContainer");
+    if(!container) return;
+    container.innerHTML = "";
+    window.shortcuts.forEach((sc, idx) => {
+      container.innerHTML += `<span class="quick-chip" onclick="selectQuickItem('${sc.name}', ${sc.price})">🏷️ ${sc.name} (₹${sc.price}) <button style="border:none;background:none;color:red;font-weight:bold;cursor:pointer;margin-left:2px;" onclick="event.stopPropagation(); editShortcut(${idx})" title="Edit / Delete">✏️</button></span>`;
+    });
+  }
+
+  window.openAddShortcutModal = function(){
+    document.getElementById("editShortIndex").value = "-1";
+    document.getElementById("newShortName").value = "";
+    document.getElementById("newShortPrice").value = "";
+    document.getElementById("delShortBtn").classList.add("hidden");
+    document.getElementById("addShortcutModal").classList.remove("hidden");
+  }
+
+  window.editShortcut = function(idx){
+    let sc = window.shortcuts[idx];
+    document.getElementById("editShortIndex").value = idx;
+    document.getElementById("newShortName").value = sc.name;
+    document.getElementById("newShortPrice").value = sc.price;
+    document.getElementById("delShortBtn").classList.remove("hidden");
+    document.getElementById("addShortcutModal").classList.remove("hidden");
+  }
+
+  window.closeAddShortcutModal = function(){
+    document.getElementById("addShortcutModal").classList.add("hidden");
+  }
+
+  window.saveShortcutData = function(){
+    let idx = parseInt(document.getElementById("editShortIndex").value);
+    let name = document.getElementById("newShortName").value.trim();
+    let price = parseFloat(document.getElementById("newShortPrice").value) || 0;
+    if(!name || price <= 0){ alert("સાચી વિગત નાખો."); return; }
+
+    if(idx === -1){
+      window.shortcuts.push({ name, price });
+    } else {
+      window.shortcuts[idx] = { name, price };
+    }
+
+    let storeKey = window.currentAgencyData.clientId || window.currentAgencyData.key;
+    localStorage.setItem(`jama_shortcuts_${storeKey}`, JSON.stringify(window.shortcuts));
+    window.renderShortcuts();
+    window.closeAddShortcutModal();
+    alert("✅ શોર્ટકટ સેવ થઈ ગયો!");
+  }
+
+  window.deleteShortcutData = function(){
+    let idx = parseInt(document.getElementById("editShortIndex").value);
+    if(idx !== -1){
+      window.shortcuts.splice(idx, 1);
+      let storeKey = window.currentAgencyData.clientId || window.currentAgencyData.key;
+      localStorage.setItem(`jama_shortcuts_${storeKey}`, JSON.stringify(window.shortcuts));
+      window.renderShortcuts();
+      window.closeAddShortcutModal();
+      alert("✅ શોર્ટકટ ડિલીટ થઈ ગયો!");
+    }
+  }
+
+  window.selectQuickItem = function(name, price){
+    document.getElementById("itemName").value = name;
+    document.getElementById("itemPrice").value = price;
+    document.getElementById("itemQty").value = "1";
+    window.calculateItemTotal();
+  }
+
+  window.calculateItemTotal = function(){
+    let price = parseFloat(document.getElementById("itemPrice").value) || 0;
+    let qty = parseFloat(document.getElementById("itemQty").value) || 1;
+    document.getElementById("itemTotalAmount").value = (price * qty).toFixed(2);
+  }
+
+  window.addCurrentItemToCart = function(){
+    let itemName = document.getElementById("itemName").value.trim();
+    let unit = document.getElementById("itemUnit").value;
+    let qty = parseFloat(document.getElementById("itemQty").value) || 1;
+    let price = parseFloat(document.getElementById("itemPrice").value) || 0;
+    let amount = parseFloat(document.getElementById("itemTotalAmount").value) || 0;
+    let note = document.getElementById("itemNote").value.trim();
+
+    if(!itemName || amount <= 0){ alert("વસ્તુનું નામ અને સાચી રકમ નાખો."); return; }
+
+    window.activeCartItems.push({
+      itemName, unit, qty, price, amount: amount.toFixed(2), note
+    });
+
+    document.getElementById("itemName").value = "";
+    document.getElementById("itemPrice").value = "";
+    document.getElementById("itemQty").value = "1";
+    document.getElementById("itemTotalAmount").value = "";
+    document.getElementById("itemNote").value = "";
+
+    window.renderCartItems();
+  }
+
+  window.renderCartItems = function(){
+    let container = document.getElementById("cartItemsList");
+    let wrap = document.getElementById("currentCartContainer");
+    if(window.activeCartItems.length === 0){
+      wrap.classList.add("hidden");
+      return;
+    }
+    wrap.classList.remove("hidden");
+    container.innerHTML = "";
+    let grandTotal = 0;
+
+    window.activeCartItems.forEach((it, i) => {
+      grandTotal += parseFloat(it.amount);
+      container.innerHTML += `
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #ddd; padding:3px 0;">
+          <div>📦 ${it.itemName} (${it.qty} ${it.unit}) ${it.note ? '- ' + it.note : ''}</div>
+          <div style="display:flex; gap:6px; align-items:center;"><b>₹${it.amount}</b> <button type="button" style="border:none;background:red;color:#fff;border-radius:3px;padding:1px 4px;cursor:pointer;" onclick="removeCartItem(${i})">X</button></div>
+        </div>`;
+    });
+
+    document.getElementById("cartGrandTotal").innerText = `₹${grandTotal.toFixed(2)}`;
+  }
+
+  window.removeCartItem = function(index){
+    window.activeCartItems.splice(index, 1);
+    window.renderCartItems();
+  }
+
+  function collectEntryData() {
+    let custName = document.getElementById("custName").value.trim();
+    let mobile = document.getElementById("custMobile").value.trim();
+    let address = document.getElementById("custAddress").value.trim();
+    let shortCode = document.getElementById("custShortCode").value.trim().toLowerCase();
+    let receiverName = document.getElementById("itemReceiverName").value.trim();
+    let giverName = document.getElementById("itemGiverName").value.trim();
+
+    if(!custName){ alert("ગ્રાહકનું નામ નાખો."); return null; }
+    if(!/^[0-9]{10}$/.test(mobile)){ alert("10 આંકડાનો સાચો મોબાઈલ નંબર નાખો."); return null; }
+
+    if(window.activeCartItems.length === 0){
+      let itemName = document.getElementById("itemName").value.trim();
+      let unit = document.getElementById("itemUnit").value;
+      let qty = document.getElementById("itemQty").value;
+      let price = parseFloat(document.getElementById("itemPrice").value) || 0;
+      let amount = parseFloat(document.getElementById("itemTotalAmount").value) || 0;
+      let note = document.getElementById("itemNote").value.trim();
+
+      if(!itemName || amount <= 0){ alert("વસ્તુનું નામ અને સાચી રકમ નાખો અથવા કાર્ટમાં ઉમેરો."); return null; }
+
+      window.activeCartItems.push({
+        itemName, unit, qty, price, amount: amount.toFixed(2), note
+      });
+    }
+
+    if(shortCode){
+      window.customerSpeedDial[shortCode] = { name: custName, mobile: mobile, address: address };
+      let storeKey = window.currentAgencyData.clientId || window.currentAgencyData.key;
+      localStorage.setItem(`jama_speeddial_${storeKey}`, JSON.stringify(window.customerSpeedDial));
+    }
+
+    let now = new Date();
+    let dt = getFormattedDateTime(now);
+
+    let totalAmount = window.activeCartItems.reduce((sum, it) => sum + parseFloat(it.amount), 0);
+    let descArray = window.activeCartItems.map(it => `${it.itemName} (${it.qty} ${it.unit})${it.note ? ' - ' + it.note : ''}`);
+
+    let extraInfoStr = "";
+    if(receiverName) extraInfoStr += ` | લેનાર: ${receiverName}`;
+    if(giverName) extraInfoStr += ` | આપનાર: ${giverName}`;
+
+    return {
+      id: Date.now(),
+      custName: custName,
+      mobile: mobile,
+      address: address,
+      shortCode: shortCode || "",
+      receiverName: receiverName,
+      giverName: giverName,
+      items: JSON.parse(JSON.stringify(window.activeCartItems)),
+      itemDesc: descArray.join(', ') + extraInfoStr,
+      amount: totalAmount,
+      remaining: totalAmount,
+      dateObject: now.toISOString(),
+      date: dt.date,
+      day: dt.day,
+      time: dt.time,
+      deleted: false,
+      isEdited: false
+    };
+  }
+
+  window.saveEntryOnly = async function(){
+    let rec = collectEntryData();
+    if(!rec) return;
+    window.ledger.push(rec);
+    await window.saveLedgerToFirebase(rec);
+    alert("✅ એન્ટ્રી ડાયરીમાં સેવ થઈ ગઈ!");
+    window.clearEntryForm();
+    window.loadLedger();
+  }
+
+  window.saveEntryAndSendWhatsApp = async function(){
+    let rec = collectEntryData();
+    if(!rec) return;
+    window.ledger.push(rec);
+    await window.saveLedgerToFirebase(rec);
+
+    let codeText = rec.shortCode ? ` [કોડ: ${rec.shortCode}]` : '';
+    let extraMsgInfo = "";
+    if(rec.receiverName) extraMsgInfo += `\n👤 માલ લેનાર: ${rec.receiverName}`;
+    if(rec.giverName) extraMsgInfo += `\n🤝 માલ આપનાર: ${rec.giverName}`;
+
+    let msg = `નમસ્કાર 🙏 *${rec.custName}* (${rec.mobile})${codeText},\n\nજમા-ઉધાર ડાયરીમાં નવી એન્ટ્રી થઈ છે:\n\n📅 તારીખ: ${rec.date} (${rec.day}), સમય: ${rec.time}\n📦 વસ્તુઓ:\n- ${rec.items.map(i=>`${i.itemName} (${i.qty} ${i.unit}) ₹${i.amount}`).join('\n- ')}${extraMsgInfo}\n\n💰 કુલ રકમ: ₹${rec.amount.toFixed(2)}\n\n*${window.settings.name}*`;
+    window.open(`https://wa.me/91${rec.mobile}?text=` + encodeURIComponent(msg), "_blank");
+    
+    alert("✅ એન્ટ્રી સેવ થઈ ગઈ અને WhatsApp મોકલવામાં આવ્યું!");
+    window.clearEntryForm();
+    window.loadLedger();
+  }
+
+  window.setLedger = function(tab){ window.ledgerTab = tab; window.loadLedger(); }
+
+  window.loadLedger = function(){
+    let box = document.getElementById("ledgerList");
+    if(!box) return;
+    let search = (document.getElementById("ledgerSearch")?.value || "").toLowerCase().trim();
+
+    let totalBakiGlobal = 0;
+    let uniqueClients = new Set();
+    let customerGroupMap = {};
+
+    window.ledger.forEach(x => {
+      if(!x.deleted){
+        uniqueClients.add(x.mobile);
+        if(!customerGroupMap[x.mobile]){
+          customerGroupMap[x.mobile] = { custName: x.custName, mobile: x.mobile, address: x.address, shortCode: x.shortCode || '', records: [] };
+        } else if(!customerGroupMap[x.mobile].shortCode && x.shortCode){
+          customerGroupMap[x.mobile].shortCode = x.shortCode;
+        }
+        customerGroupMap[x.mobile].records.push(x);
+      } else if(window.ledgerTab === 'deleted') {
+        if(!customerGroupMap[x.id]){
+          customerGroupMap[x.id] = { custName: x.custName, mobile: x.mobile, address: x.address, shortCode: x.shortCode || '', records: [x] };
+        }
+      }
+    });
+
+    let clientArr = Object.values(customerGroupMap);
+    clientArr.forEach(group => {
+      let totalCustBills = group.records.reduce((sum, r) => sum + (!r.deleted ? parseFloat(r.amount || 0) : 0), 0);
+      let custPayments = (window.currentAgencyData.paymentsLog && window.currentAgencyData.paymentsLog[group.mobile]) || [];
+      let totalPaid = custPayments.reduce((s, p) => s + parseFloat(p.amount || 0), 0);
+      let netCustBaki = Math.max(0, totalCustBills - totalPaid);
+      totalBakiGlobal += netCustBaki;
+    });
+
+    document.getElementById("totalOutstandingDisplay").innerText = totalBakiGlobal.toFixed(2);
+    document.getElementById("totalClientsCount").innerText = uniqueClients.size;
+
+    let activeClientsPreviewEl = document.getElementById("activeClientsListPreview");
+    if(activeClientsPreviewEl){
+      if(clientArr.length > 0){
+        let namesHtml = clientArr.map(c => `<span style="cursor:pointer; text-decoration:underline; margin-right:6px;" onclick="openCustomerStatement('${c.mobile}')">👤 ${c.custName} (${c.mobile})${c.shortCode?' ['+c.shortCode+']':''}</span>`).join(' | ');
+        activeClientsPreviewEl.innerHTML = `સક્રિય ગ્રાહકો (ક્લિક કરો): ${namesHtml}`;
+      } else {
+        activeClientsPreviewEl.innerHTML = `કોઈ સક્રિય ગ્રાહક નથી.`;
+      }
+    }
+
+    let groupList = clientArr;
+    if(search){
+      groupList = groupList.filter(g => g.custName.toLowerCase().includes(search) || g.mobile.includes(search) || g.shortCode.toLowerCase().includes(search));
+    }
+
+    if(groupList.length === 0){ box.innerHTML = "કોઈ રેકોર્ડ મળ્યો નથી."; return; }
+    box.innerHTML = "";
+
+    groupList.reverse().forEach(group => {
+      let totalCustBills = group.records.reduce((sum, r) => sum + (!r.deleted ? parseFloat(r.amount || 0) : 0), 0);
+      let custPayments = (window.currentAgencyData.paymentsLog && window.currentAgencyData.paymentsLog[group.mobile]) || [];
+      let totalPaid = custPayments.reduce((s, p) => s + parseFloat(p.amount || 0), 0);
+      let netCustBaki = Math.max(0, totalCustBills - totalPaid);
+
+      let masterActions = "";
+      if(window.ledgerTab !== 'deleted'){
+        masterActions = `
+          <div style="margin-top:4px; display:flex; gap:4px;">
+            <button class="btn btn-success" type="button" style="font-size:10px; padding:4px 8px; background:#198754;" onclick="addPaymentMaster('${group.mobile}')">💰 જમા કરો</button>
+            ${netCustBaki > 0 ? `<button class="btn btn-warning" type="button" style="font-size:10px; padding:4px 8px; background:#25D366; color:#fff;" onclick="sendReminderWhatsAppMaster('${group.mobile}')">📲 રિમાઈન્ડર</button>` : ''}
+            <button class="btn btn-primary" type="button" style="font-size:10px; padding:4px 8px; background:#0d6efd;" onclick="openEditOrderModal('${group.mobile}')">✏️ Edit Bill</button>
+            <button class="btn btn-secondary" type="button" style="font-size:10px; padding:4px 8px; background:#6c757d;" onclick="sendCustomerFullStatementWhatsAppByMobile('${group.mobile}')">📲 આખો હિસાબ મોકલો</button>
+          </div>`;
+      }
+
+      let itemsCompactHtml = "";
+      
+      if(window.ledgerTab === 'jama'){
+        if(custPayments.length > 0){
+          custPayments.forEach(p => {
+            itemsCompactHtml += `
+              <div style="background:#e8f5e9; border-bottom:1px solid #c8e6c9; padding:5px 0; font-size:11px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <div>📅 જમા તારીખ: ${p.date} (${p.day}) ${p.time}<br>🟢 જમા કરાવેલ રકમ: <span style="color:#198754; font-weight:bold;">₹${parseFloat(p.amount).toFixed(2)}</span></div>
+                </div>
+              </div>`;
+          });
+        }
+      } else {
+        group.records.slice().reverse().forEach(rec => {
+          let amt = parseFloat(rec.amount || 0);
+          if(window.ledgerTab === 'baki' && netCustBaki <= 0 && window.ledgerTab !== 'deleted') return;
+
+          let actBtns = "";
+          let itemBoxStyle = "background:#fff; border-bottom:1px solid #eee;";
+          
+          if(rec.deleted){
+            itemBoxStyle = "background:#ffebee; border:1px solid #ffc107; padding:6px; border-radius:6px; margin-bottom:4px;";
+            actBtns += `<span style="color:#c62828; font-size:12px; font-weight:bold;">🗑️ ડિલીટ થયેલ</span>`;
+          } else if(rec.isEdited) {
+            itemBoxStyle = "background:#fff8e1; border:1px solid #ffe0b2; padding:6px; border-radius:6px; margin-bottom:4px;";
+            actBtns += `<button class="btn btn-danger" type="button" style="font-size:9px; padding:2px 6px;" onclick="deleteRecord(${rec.id})">Delete</button>`;
+          } else {
+            actBtns += `<button class="btn btn-danger" type="button" style="font-size:9px; padding:2px 6px;" onclick="deleteRecord(${rec.id})">Delete</button>`;
+          }
+
+          let editedBadgeText = rec.isEdited ? `<div style="color:#f57c00; font-weight:bold; font-size:11px; margin-bottom:2px;">✏️ એડિટ થયેલ બિલ</div>` : '';
+
+          itemsCompactHtml += `
+            <div style="${itemBoxStyle} padding:5px; border-radius:4px; margin-bottom:3px;">
+              ${editedBadgeText}
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>📅 ${rec.date} (${rec.day}) ${rec.time}<br>📦 ${rec.itemDesc} | <b>₹${amt.toFixed(2)}</b></div>
+                <div>${actBtns}</div>
+              </div>
+            </div>`;
+        });
+      }
+
+      if(!itemsCompactHtml && window.ledgerTab !== 'deleted') return;
+
+      let codeDisplayStr = group.shortCode ? ` [કોડ: ${group.shortCode}]` : '';
+
+      box.innerHTML += `
+        <div class="ledger-item">
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #ff9800; padding-bottom:4px; margin-bottom:4px;">
+            <div style="cursor:pointer; flex:1;" onclick="openCustomerStatement('${group.mobile}')">
+              <b>👤 ${group.custName} (${group.mobile})${codeDisplayStr}</b>
+            </div>
+            <span style="background:#ffe0b2; color:#e65100; padding:2px 6px; border-radius:4px; font-weight:bold; font-size:11px;">કુલ બાકી: <span style="color:red; font-weight:bold;">₹${netCustBaki.toFixed(2)}</span> 📄</span>
+          </div>
+          ${masterActions}
+          <div style="margin-top:4px;">${itemsCompactHtml}</div>
+        </div>`;
+    });
+  }
+
+  window.openEditOrderModal = function(mobile){
+    let groupRecs = window.ledger.filter(x => x.mobile === mobile && !x.deleted);
+    if(groupRecs.length === 0) return;
+    let c = groupRecs[0];
+
+    document.getElementById("editOrderMobile").value = mobile;
+    document.getElementById("editOrderName").value = c.custName;
+    document.getElementById("editOrderMobDisplay").value = c.mobile;
+
+    let container = document.getElementById("editOrderItemsContainer");
+    container.innerHTML = "";
+
+    groupRecs.forEach((r, idx) => {
+      container.innerHTML += `
+        <div style="background:#fff; padding:6px; border-radius:6px; margin-bottom:6px; border:1px solid #ddd;" data-recid="${r.id}">
+          <div style="font-weight:bold; font-size:12px; color:#0d6efd; margin-bottom:3px;">${r.itemDesc}</div>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <select class="edit-item-unit" style="flex:1;" onchange="calculateEditOrderTotals()">
+              <option value="નંગ" ${r.unit==='નંગ'?'selected':''}>નંગ</option>
+              <option value="કિલો" ${r.unit==='કિલો'?'selected':''}>કિલો</option>
+              <option value="ગ્રામ" ${r.unit==='ગ્રામ'?'selected':''}>ગ્રામ</option>
+              <option value="લિટર" ${r.unit==='લિટર'?'selected':''}>લિટર</option>
+            </select>
+            <input type="number" class="edit-item-qty" value="${r.qty || 1}" step="any" style="flex:1;" oninput="calculateEditOrderTotals()">
+            <input type="hidden" class="edit-item-price" value="${r.price || (parseFloat(r.amount)/(r.qty||1))}">
+            <b class="edit-item-amt" style="flex:1; text-align:right; color:#198754;">₹${r.amount}</b>
+          </div>
+        </div>`;
+    });
+
+    window.calculateEditOrderTotals();
+    document.getElementById("editOrderModal").classList.remove("hidden");
+  }
+
+  window.calculateEditOrderTotals = function(){
+    let container = document.getElementById("editOrderItemsContainer");
+    let cards = container.querySelectorAll("div[data-recid]");
+    let finalTotal = 0;
+
+    cards.forEach(card => {
+      let qty = parseFloat(card.querySelector(".edit-item-qty").value) || 1;
+      let price = parseFloat(card.querySelector(".edit-item-price").value) || 0;
+      let lineTotal = qty * price;
+      card.querySelector(".edit-item-amt").innerText = `₹${lineTotal.toFixed(2)}`;
+      finalTotal += lineTotal;
+    });
+
+    document.getElementById("editOrderFinalTotal").innerText = `₹ ${finalTotal.toFixed(2)}`;
+  }
+
+  window.closeEditOrderModal = function(){
+    document.getElementById("editOrderModal").classList.add("hidden");
+  }
+
+  window.saveEditedOrderChanges = async function(){
+    let mobile = document.getElementById("editOrderMobile").value;
+    let container = document.getElementById("editOrderItemsContainer");
+    let cards = container.querySelectorAll("div[data-recid]");
+
+    let updatedRecsText = [];
+    let newFinalTotal = 0;
+
+    for(let card of cards){
+      let recId = parseInt(card.getAttribute("data-recid"));
+      let qty = parseFloat(card.querySelector(".edit-item-qty").value) || 1;
+      let unit = card.querySelector(".edit-item-unit").value;
+      let rec = window.ledger.find(x => x.id === recId);
+      if(rec){
+        let price = rec.price || (parseFloat(rec.amount) / (rec.qty || 1));
+        let newAmt = qty * price;
+        rec.qty = qty;
+        rec.unit = unit;
+        rec.amount = newAmt;
+        rec.remaining = newAmt;
+        rec.itemDesc = `${rec.itemName || 'વસ્તુ'} (${qty} ${unit})`;
+        rec.isEdited = true;
+        newFinalTotal += newAmt;
+        updatedRecsText.push(`- ${rec.itemDesc}: ₹${newAmt.toFixed(2)}`);
+        await window.saveLedgerToFirebase(rec);
+      }
+    }
+
+    window.closeEditOrderModal();
+    window.loadLedger();
+
+    let c = window.ledger.find(x => x.mobile === mobile);
+    if(c){
+      let dt = getFormattedDateTime(new Date());
+      let codeText = c.shortCode ? ` [કોડ: ${c.shortCode}]` : '';
+      let msg = `નમસ્કાર 🙏 *${c.custName}* (${c.mobile})${codeText},\n\nઆપનું બિલ અપડેટ કરવામાં આવ્યું છે:\n\n📅 તારીખ: ${dt.date} (${dt.day}), સમય: ${dt.time}\n${updatedRecsText.join('\n')}\n\n🔴 *કુલ બાકી રકમ: ₹${newFinalTotal.toFixed(2)}*\n\n*${window.settings.name}*`;
+      window.open(`https://wa.me/91${mobile}?text=` + encodeURIComponent(msg), "_blank");
+    }
+    alert("✅ ઓર્ડર સફળતાપૂર્વક અપડેટ થઈ ગયો!");
+  }
+
+  window.openCustomerStatement = function(mobile){
+    let groupRecs = window.ledger.filter(x => x.mobile === mobile);
+    if(groupRecs.length === 0) return;
+    let c = groupRecs[0];
+    let codeStr = c.shortCode ? ` [કોડ: ${c.shortCode}]` : '';
+    document.getElementById("statementTitle").innerText = `👤 ${c.custName} (${c.mobile})${codeStr} - સ્ટેટમેન્ટ`;
+    let body = document.getElementById("statementBody");
+    body.innerHTML = `📍 સરનામું: ${c.address || 'નથી'}<br><hr style="margin:6px 0;">`;
+
+    let total = 0;
+    groupRecs.forEach(r => {
+      let amt = parseFloat(r.amount || 0);
+      
+      if(r.deleted){
+        body.innerHTML += `
+          <div style="background:#ffebee; border:2px solid #ef5350; padding:8px; border-radius:6px; margin-bottom:6px;">
+            <div style="color:#c62828; font-weight:bold; font-size:13px; margin-bottom:2px;">🗑️ ડિલીટ થયેલ એન્ટ્રી</div>
+            ▪️ ${r.date} (${r.day}), ${r.time}<br>
+            📦 ${r.itemDesc}<br>
+            💰 રકમ: ₹${amt.toFixed(2)}
+          </div>`;
+      } else if(r.isEdited){
+        total += amt;
+        body.innerHTML += `
+          <div style="background:#fff8e1; border:2px solid #ffa000; padding:8px; border-radius:6px; margin-bottom:6px;">
+            <div style="color:#f57c00; font-weight:bold; font-size:13px; margin-bottom:2px;">✏️ એડિટ થયેલ બિલ</div>
+            ▪️ ${r.date} (${r.day}), ${r.time}<br>
+            📦 ${r.itemDesc}<br>
+            💰 રકમ: ₹${amt.toFixed(2)}
+          </div>`;
+      } else {
+        total += amt;
+        body.innerHTML += `
+          <div style="background:#fff; padding:6px; border-radius:6px; margin-bottom:6px; border:1px solid #eee;">
+            ▪️ ${r.date} (${r.day}), ${r.time}<br>
+            📦 ${r.itemDesc}<br>
+            💰 રકમ: ₹${amt.toFixed(2)}
+          </div>`;
+      }
+    });
+
+    let custPayments = (window.currentAgencyData.paymentsLog && window.currentAgencyData.paymentsLog[mobile]) || [];
+    let totalPaid = custPayments.reduce((s, p) => s + parseFloat(p.amount || 0), 0);
+    let netTotal = Math.max(0, total - totalPaid);
+
+    if(custPayments.length > 0){
+      let payHtmlArr = custPayments.map(p => `🟢 જમા: ₹${parseFloat(p.amount).toFixed(2)} (${p.date} (${p.day}), ${p.time})`);
+      body.innerHTML += `<div style="background:#e8f5e9; padding:6px; border-radius:6px; margin:8px 0; font-size:12px; font-weight:bold; color:#198754;">
+        ચૂકવેલ જમા રકમ:<br>${payHtmlArr.join('<br>')}
+      </div>`;
+    }
+
+    body.innerHTML += `<div style="font-size:14px; margin-top:6px;"><b>કુલ બાકી રકમ: <span style="color:red; font-weight:bold; font-size:16px;">₹${netTotal.toFixed(2)}</span></b></div>`;
+    document.getElementById("customerStatementModal").classList.remove("hidden");
+  }
+
+  window.closeStatementModal = function(){
+    document.getElementById("customerStatementModal").classList.add("hidden");
+  }
+
+  // 🛠️ FIXED WHATSAPP STATEMENT TO INCLUDE CUSTOMER NAME & MOBILE NUMBER
+  window.sendCustomerFullStatementWhatsApp = function(){
+    let title = document.getElementById("statementTitle").innerText;
+    let bodyText = document.getElementById("statementBody").innerText;
+    let mobile = "";
+    let groupRecs = window.ledger.filter(x => title.includes(x.mobile));
+    
+    if(groupRecs.length > 0){
+      mobile = groupRecs[0].mobile;
+    }
+    if(!mobile){ alert("મોબાઈલ નંબર મળ્યો નથી."); return; }
+
+    let c = groupRecs[0];
+    let codeText = c.shortCode ? ` [કોડ: ${c.shortCode}]` : '';
+    let dt = getFormattedDateTime(new Date());
+
+    let msg = `નમસ્કાર 🙏 *${c.custName}* (${c.mobile})${codeText},\n\nઆપનો સ્ટેટમેન્ટ હિસાબ:\n📅 તારીખ: ${dt.date} (${dt.day}), સમય: ${dt.time}\n\n📍 ${bodyText}\n\n*${window.settings.name}*`;
+    window.open(`https://wa.me/91${mobile}?text=` + encodeURIComponent(msg), "_blank");
+  }
+
+  window.sendCustomerFullStatementWhatsAppByMobile = function(mobile){
+    let groupRecs = window.ledger.filter(x => x.mobile === mobile && !x.deleted);
+    if(groupRecs.length === 0) return;
+    let c = groupRecs[0];
+    let totalBaki = groupRecs.reduce((sum, r) => sum + parseFloat(r.amount || 0), 0);
+    let custPayments = (window.currentAgencyData.paymentsLog && window.currentAgencyData.paymentsLog[mobile]) || [];
+    let totalPaid = custPayments.reduce((s, p) => s + parseFloat(p.amount || 0), 0);
+    let netTotal = Math.max(0, totalBaki - totalPaid);
+
+    let items = [];
+    groupRecs.forEach(r => {
+      let editTag = r.isEdited ? ' (✏️ એડિટ કરેલ)' : '';
+      items.push(`- ${r.itemDesc}: ₹${parseFloat(r.amount).toFixed(2)}${editTag} [${r.date}]`);
+    });
+
+    let dt = getFormattedDateTime(new Date());
+    let codeText = c.shortCode ? ` [કોડ: ${c.shortCode}]` : '';
+    let payArr = custPayments.map(p => `🟢 જમા: ₹${parseFloat(p.amount).toFixed(2)} (${p.date} (${p.day}), ${p.time})`);
+    let payMsgPart = payArr.length > 0 ? `\n\nજમા રકમ:\n${payArr.join('\n')}` : '';
+    let msg = `નમસ્કાર 🙏 *${c.custName}* (${c.mobile})${codeText},\n\nઆપનો આખો હિસાબ:\n📅 તારીખ: ${dt.date} (${dt.day}), સમય: ${dt.time}\n\n${items.join('\n')}${payMsgPart}\n\n🔴 *કુલ બાકી રકમ: ₹${netTotal.toFixed(2)}*\n\n*${window.settings.name}*`;
+    window.open(`https://wa.me/91${c.mobile}?text=` + encodeURIComponent(msg), "_blank");
+  }
+
+  window.sendReminderWhatsAppMaster = function(mobile){
+    let groupRecs = window.ledger.filter(x => x.mobile === mobile && !x.deleted);
+    if(groupRecs.length === 0) return;
+    let c = groupRecs[0];
+
+    let totalBaki = groupRecs.reduce((sum, r) => sum + parseFloat(r.amount || 0), 0);
+    let custPayments = (window.currentAgencyData.paymentsLog && window.currentAgencyData.paymentsLog[mobile]) || [];
+    let totalPaid = custPayments.reduce((s, p) => s + parseFloat(p.amount || 0), 0);
+    let netTotal = Math.max(0, totalBaki - totalPaid);
+
+    let itemsText = [];
+    groupRecs.forEach(r => {
+      itemsText.push(`- ${r.itemDesc}: ₹${parseFloat(r.amount).toFixed(2)} (${r.date} ${r.day}, ${r.time})`);
+    });
+
+    let dt = getFormattedDateTime(new Date());
+    let codeText = c.shortCode ? ` [કોડ: ${c.shortCode}]` : '';
+    let msg = `નમસ્કાર 🙏 *${c.custName}* (${c.mobile})${codeText},\n\nઆપની બાકી રકમનું રિમાઈન્ડર:\n\n📅 તારીખ: ${dt.date} (${dt.day}), સમય: ${dt.time}\n\n${itemsText.join('\n')}\n\n🔴 *કુલ બાકી રકમ: ₹${netTotal.toFixed(2)}*\n\nકૃપા કરીને રકમ ચૂકવવા વિનંતી છે.\n\n*${window.settings.name}*`;
+    window.open(`https://wa.me/91${c.mobile}?text=` + encodeURIComponent(msg), "_blank");
+  }
+
+  window.addPaymentMaster = async function(mobile){
+    let groupRecs = window.ledger.filter(x => x.mobile === mobile && !x.deleted);
+    if(groupRecs.length === 0) return;
+    let c = groupRecs[0];
+
+    let totalBaki = groupRecs.reduce((sum, r) => sum + parseFloat(r.amount || 0), 0);
+    let custPayments = (window.currentAgencyData.paymentsLog && window.currentAgencyData.paymentsLog[mobile]) || [];
+    let totalPaid = custPayments.reduce((s, p) => s + parseFloat(p.amount || 0), 0);
+    let netBaki = Math.max(0, totalBaki - totalPaid);
+
+    let payInput = prompt(`ગ્રાહક: ${c.custName}\nકુલ બાકી: ₹${netBaki.toFixed(2)}\nજમા કરાવવાની રકમ નાખો:`, "");
+    if(!payInput) return;
+    let payAmt = parseFloat(payInput);
+    if(isNaN(payAmt) || payAmt <= 0 || payAmt > netBaki){ alert("સાચી રકમ નાખો."); return; }
+
+    let dt = getFormattedDateTime(new Date());
+    if(!window.currentAgencyData.paymentsLog) window.currentAgencyData.paymentsLog = {};
+    if(!window.currentAgencyData.paymentsLog[mobile]) window.currentAgencyData.paymentsLog[mobile] = [];
+
+    window.currentAgencyData.paymentsLog[mobile].push({
+      amount: payAmt,
+      date: dt.date,
+      day: dt.day,
+      time: dt.time
+    });
+
+    let storeKey = window.currentAgencyData.clientId || window.currentAgencyData.key;
+    await setDoc(doc(window.db, "global_system_jama_udhar_agencies", storeKey), window.currentAgencyData);
+    window.loadLedger();
+
+    let newNetBaki = Math.max(0, netBaki - payAmt);
+    let codeText = c.shortCode ? ` [કોડ: ${c.shortCode}]` : '';
+    let msg = `નમસ્કાર 🙏 *${c.custName}* (${c.mobile})${codeText},\n\nતમારા હિસ્સામાંથી ₹${payAmt.toFixed(2)} જમા (Paid) થઈ ગયા છે.\n📅 તારીખ: ${dt.date} (${dt.day}), સમય: ${dt.time}\n🔴 *બાકી રકમ: ₹${newNetBaki.toFixed(2)}*\n\n*${window.settings.name}*`;
+    window.open(`https://wa.me/91${c.mobile}?text=` + encodeURIComponent(msg), "_blank");
+    alert("✅ રકમ સફળતાપૂર્વક જમા થઈ ગઈ અને WhatsApp મોકલવામાં આવ્યો!");
+  }
+
+  window.deleteRecord = async function(recId){
+    if(!confirm("આ એન્ટ્રી ડિલીટ કરવી છે?")) return;
+    let rec = window.ledger.filter(x => x.id === recId);
+    if(rec.length > 0){
+      rec[0].deleted = true;
+      await window.saveLedgerToFirebase(rec[0]);
+    }
+    window.loadLedger();
+  }
+</script>
+
+</body>
+</html>
