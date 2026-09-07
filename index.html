@@ -322,7 +322,11 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     <h3 style="color:#0d6efd; text-align:center; margin-bottom:10px;">⚡ શોર્ટકટ આઈટમ ઉમેરો/સુધારો</h3>
     <input type="hidden" id="editShortIndex" value="-1">
     <label>આઈટમનું નામ:</label>
-    <input id="newShortName" placeholder="દા.ત. માવો" lang="gu">
+    <!-- 🎤 ADDED VOICE MIC BUTTON FOR SHORTCUT ITEM NAME -->
+    <div style="display:flex; gap:4px;">
+      <input id="newShortName" placeholder="દા.ત. માવો" lang="gu">
+      <button class="voice-btn" type="button" onclick="startVoice('newShortName')">🎤</button>
+    </div>
     <label>ભાવ (₹):</label>
     <input id="newShortPrice" type="number" placeholder="દા.ત. 35">
     <div style="display:flex; gap:6px; margin-top:12px;">
@@ -1310,7 +1314,6 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     document.getElementById("customerStatementModal").classList.add("hidden");
   }
 
-  // 🛠️ FIXED WHATSAPP STATEMENT TO INCLUDE CUSTOMER NAME & MOBILE NUMBER
   window.sendCustomerFullStatementWhatsApp = function(){
     let title = document.getElementById("statementTitle").innerText;
     let bodyText = document.getElementById("statementBody").innerText;
