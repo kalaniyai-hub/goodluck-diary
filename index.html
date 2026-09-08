@@ -322,7 +322,6 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     <h3 style="color:#0d6efd; text-align:center; margin-bottom:10px;">⚡ શોર્ટકટ આઈટમ ઉમેરો/સુધારો</h3>
     <input type="hidden" id="editShortIndex" value="-1">
     <label>આઈટમનું નામ:</label>
-    <!-- 🎤 ADDED VOICE MIC BUTTON FOR SHORTCUT ITEM NAME -->
     <div style="display:flex; gap:4px;">
       <input id="newShortName" placeholder="દા.ત. માવો" lang="gu">
       <button class="voice-btn" type="button" onclick="startVoice('newShortName')">🎤</button>
@@ -407,7 +406,7 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
         full: `${d}/${m}/${y} (${dayStr}), સમય: ${timeStr}`
       };
     } catch(e) {
-      return { date: "07/09/2026", day: "સોમવાર", time: "12:40 PM", full: "07/09/2026 (સોમવાર), સમય: 12:40 PM" };
+      return { date: "08/09/2026", day: "મંગળવાર", time: "03:18 PM", full: "08/09/2026 (મંગળવાર), સમય: 03:18 PM" };
     }
   }
 
@@ -1054,8 +1053,11 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     clientArr.forEach(group => {
       let totalCustBills = group.records.reduce((sum, r) => sum + (!r.deleted ? parseFloat(r.amount || 0) : 0), 0);
       let custPayments = (window.currentAgencyData.paymentsLog && window.currentAgencyData.paymentsLog[group.mobile]) || [];
-      let totalPaid = custPayments.reduce((s, p) => s + parseFloat(p.amount || 0), 0);
-      let netCustBaki = Math.max(0, totalCustBills - totalPaid);
+      
+      let activeBillsCount = group.records.filter(r => !r.deleted).length;
+      let effectivePaid = activeBillsCount === 0 ? 0 : custPayments.reduce((s, p) => s + parseFloat(p.amount || 0), 0);
+
+      let netCustBaki = Math.max(0, totalCustBills - effectivePaid);
       totalBakiGlobal += netCustBaki;
     });
 
@@ -1083,8 +1085,9 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     groupList.reverse().forEach(group => {
       let totalCustBills = group.records.reduce((sum, r) => sum + (!r.deleted ? parseFloat(r.amount || 0) : 0), 0);
       let custPayments = (window.currentAgencyData.paymentsLog && window.currentAgencyData.paymentsLog[group.mobile]) || [];
-      let totalPaid = custPayments.reduce((s, p) => s + parseFloat(p.amount || 0), 0);
-      let netCustBaki = Math.max(0, totalCustBills - totalPaid);
+      let activeBillsCount = group.records.filter(r => !r.deleted).length;
+      let effectivePaid = activeBillsCount === 0 ? 0 : custPayments.reduce((s, p) => s + parseFloat(p.amount || 0), 0);
+      let netCustBaki = Math.max(0, totalCustBills - effectivePaid);
 
       let masterActions = "";
       if(window.ledgerTab !== 'deleted'){
@@ -1100,12 +1103,13 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
       let itemsCompactHtml = "";
       
       if(window.ledgerTab === 'jama'){
-        if(custPayments.length > 0){
-          custPayments.forEach(p => {
+        if(custPayments.length > 0 && activeBillsCount > 0){
+          custPayments.forEach((p, pIdx) => {
             itemsCompactHtml += `
               <div style="background:#e8f5e9; border-bottom:1px solid #c8e6c9; padding:5px 0; font-size:11px;">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                   <div>📅 જમા તારીખ: ${p.date} (${p.day}) ${p.time}<br>🟢 જમા કરાવેલ રકમ: <span style="color:#198754; font-weight:bold;">₹${parseFloat(p.amount).toFixed(2)}</span></div>
+                  <div><button class="btn btn-danger" type="button" style="font-size:9px; padding:2px 6px;" onclick="deletePaymentRecord('${group.mobile}', ${pIdx})">Delete</button></div>
                 </div>
               </div>`;
           });
@@ -1296,10 +1300,11 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     });
 
     let custPayments = (window.currentAgencyData.paymentsLog && window.currentAgencyData.paymentsLog[mobile]) || [];
-    let totalPaid = custPayments.reduce((s, p) => s + parseFloat(p.amount || 0), 0);
+    let activeBillsCount = groupRecs.filter(r => !r.deleted).length;
+    let totalPaid = activeBillsCount === 0 ? 0 : custPayments.reduce((s, p) => s + parseFloat(p.amount || 0), 0);
     let netTotal = Math.max(0, total - totalPaid);
 
-    if(custPayments.length > 0){
+    if(custPayments.length > 0 && activeBillsCount > 0){
       let payHtmlArr = custPayments.map(p => `🟢 જમા: ₹${parseFloat(p.amount).toFixed(2)} (${p.date} (${p.day}), ${p.time})`);
       body.innerHTML += `<div style="background:#e8f5e9; padding:6px; border-radius:6px; margin:8px 0; font-size:12px; font-weight:bold; color:#198754;">
         ચૂકવેલ જમા રકમ:<br>${payHtmlArr.join('<br>')}
@@ -1339,7 +1344,8 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     let c = groupRecs[0];
     let totalBaki = groupRecs.reduce((sum, r) => sum + parseFloat(r.amount || 0), 0);
     let custPayments = (window.currentAgencyData.paymentsLog && window.currentAgencyData.paymentsLog[mobile]) || [];
-    let totalPaid = custPayments.reduce((s, p) => s + parseFloat(p.amount || 0), 0);
+    let activeBillsCount = groupRecs.filter(r => !r.deleted).length;
+    let totalPaid = activeBillsCount === 0 ? 0 : custPayments.reduce((s, p) => s + parseFloat(p.amount || 0), 0);
     let netTotal = Math.max(0, totalBaki - totalPaid);
 
     let items = [];
@@ -1350,7 +1356,7 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
 
     let dt = getFormattedDateTime(new Date());
     let codeText = c.shortCode ? ` [કોડ: ${c.shortCode}]` : '';
-    let payArr = custPayments.map(p => `🟢 જમા: ₹${parseFloat(p.amount).toFixed(2)} (${p.date} (${p.day}), ${p.time})`);
+    let payArr = (activeBillsCount > 0 ? custPayments : []).map(p => `🟢 જમા: ₹${parseFloat(p.amount).toFixed(2)} (${p.date} (${p.day}), ${p.time})`);
     let payMsgPart = payArr.length > 0 ? `\n\nજમા રકમ:\n${payArr.join('\n')}` : '';
     let msg = `નમસ્કાર 🙏 *${c.custName}* (${c.mobile})${codeText},\n\nઆપનો આખો હિસાબ:\n📅 તારીખ: ${dt.date} (${dt.day}), સમય: ${dt.time}\n\n${items.join('\n')}${payMsgPart}\n\n🔴 *કુલ બાકી રકમ: ₹${netTotal.toFixed(2)}*\n\n*${window.settings.name}*`;
     window.open(`https://wa.me/91${c.mobile}?text=` + encodeURIComponent(msg), "_blank");
@@ -1363,7 +1369,8 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
 
     let totalBaki = groupRecs.reduce((sum, r) => sum + parseFloat(r.amount || 0), 0);
     let custPayments = (window.currentAgencyData.paymentsLog && window.currentAgencyData.paymentsLog[mobile]) || [];
-    let totalPaid = custPayments.reduce((s, p) => s + parseFloat(p.amount || 0), 0);
+    let activeBillsCount = groupRecs.filter(r => !r.deleted).length;
+    let totalPaid = activeBillsCount === 0 ? 0 : custPayments.reduce((s, p) => s + parseFloat(p.amount || 0), 0);
     let netTotal = Math.max(0, totalBaki - totalPaid);
 
     let itemsText = [];
@@ -1412,6 +1419,18 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     let msg = `નમસ્કાર 🙏 *${c.custName}* (${c.mobile})${codeText},\n\nતમારા હિસ્સામાંથી ₹${payAmt.toFixed(2)} જમા (Paid) થઈ ગયા છે.\n📅 તારીખ: ${dt.date} (${dt.day}), સમય: ${dt.time}\n🔴 *બાકી રકમ: ₹${newNetBaki.toFixed(2)}*\n\n*${window.settings.name}*`;
     window.open(`https://wa.me/91${c.mobile}?text=` + encodeURIComponent(msg), "_blank");
     alert("✅ રકમ સફળતાપૂર્વક જમા થઈ ગઈ અને WhatsApp મોકલવામાં આવ્યો!");
+  }
+
+  // 🛠️ ADDED FUNCTION TO DELETE PAYMENT ENTRY DIRECTLY
+  window.deletePaymentRecord = async function(mobile, paymentIndex){
+    if(!confirm("આ જમા થયેલી રકમની એન્ટ્રી ડિલીટ કરવી છે?")) return;
+    if(window.currentAgencyData.paymentsLog && window.currentAgencyData.paymentsLog[mobile]){
+      window.currentAgencyData.paymentsLog[mobile].splice(paymentIndex, 1);
+      let storeKey = window.currentAgencyData.clientId || window.currentAgencyData.key;
+      await setDoc(doc(window.db, "global_system_jama_udhar_agencies", storeKey), window.currentAgencyData);
+      window.loadLedger();
+      alert("✅ જમા થયેલ એન્ટ્રી ડિલીટ થઈ ગઈ!");
+    }
   }
 
   window.deleteRecord = async function(recId){
