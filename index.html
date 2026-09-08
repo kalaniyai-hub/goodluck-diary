@@ -66,6 +66,17 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
   </div>
 </div>
 
+<!-- ================= PASSWORD CHANGE MODAL ================= -->
+<div id="changePasswordModal" class="modal-overlay hidden">
+  <div class="modal-box" style="text-align:center;">
+    <h3 style="color:#0d6efd; margin-bottom:8px;">🔑 નવો પાસવર્ડ સેટ કરો</h3>
+    <div style="font-size:12px; color:#666; margin-bottom:12px;">સુરક્ષા માટે તમારો નવો પાસવર્ડ અહીં દાખલ કરો:</div>
+    <label style="text-align:left;">નવો પાસવર્ડ:</label>
+    <input id="newPasswordInput" type="password" placeholder="નવો પાસવર્ડ નાખો" style="margin-bottom:12px;">
+    <button id="saveNewPasswordBtn" class="btn btn-success" type="button" style="width:100%; padding:10px; background:#198754; font-weight:bold;">💾 પાસવર્ડ સેવ કરો અને આગળ વધો</button>
+  </div>
+</div>
+
 <!-- ================= 2. MASTER OWNER VERIFICATION MODAL ================= -->
 <div id="masterModal" class="modal-overlay hidden">
   <div class="modal-box" style="text-align:center;">
@@ -92,7 +103,7 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
 <!-- ================= 3. SUPER ADMIN MASTER PANEL ================= -->
 <div id="superAdminModal" class="container hidden" style="margin-top:20px;">
   <div class="card" style="background:#fff3cd; border:1px solid #ffeeba;">
-    <h3 style="color:#856404;">👑 માસ્ટર ઓનર પેનલ (Customer Control & Edit)</h3>
+    <h3 style="color:#856404;">👑 માસ્ટર ઓનર પેનલ (Customer Control & Master Key View)</h3>
     
     <div style="margin-bottom:8px;">
       <label>🔍 એજન્ટ / કસ્ટમર શોધો (નામ કે મોબાઈલથી):</label>
@@ -117,7 +128,7 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
 
       <div class="row">
         <div><label>Client ID</label><input id="saNewId" placeholder="દા.ત. shop1" autocapitalize="none"></div>
-        <div><label>પાસવર્ડ</label><input id="saNewKey" placeholder="પાસવર્ડ"></div>
+        <div><label>પાસવર્ડ (માસ્ટર કી)</label><input id="saNewKey" placeholder="પાસવર્ડ"></div>
       </div>
 
       <div class="row" style="margin-top:6px;">
@@ -142,7 +153,7 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
       </div>
     </div>
 
-    <h4 style="margin-top:10px; font-size:13px; color:#333;">📋 તમામ કસ્ટમર લિસ્ટ અને કંટ્રોલ (<span id="totalAdminAgenciesCount">0</span>):</h4>
+    <h4 style="margin-top:10px; font-size:13px; color:#333;">📋 તમામ કસ્ટમર લિસ્ટ અને માસ્ટર કી વ્યુ (<span id="totalAdminAgenciesCount">0</span>):</h4>
     <div id="agencyListContainer" style="margin-top:6px; font-size:12px; background:#fff; padding:8px; border-radius:6px; max-height:280px; overflow-y:auto;"></div>
 
     <button id="closeSuperAdminBtn" class="btn btn-secondary" type="button" style="width:100%; margin-top:10px; background:#6c757d; padding:10px;">🔒 બંધ કરો</button>
@@ -430,12 +441,12 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
       snap.forEach(docSnap => { window.agencies.push(docSnap.data()); });
 
       if(window.agencies.length === 0){
-        let defaultAg = { name: "ગુડલક જમા-ઉધાર ડાયરી", mobile: "7878515174", clientId: "goodluck", key: "123456", blocked: false, expiryDays: 30, deviceLimit: 1, activeDevices: [], paymentsLog: {} };
+        let defaultAg = { name: "ગુડલક જમા-ઉધાર ડાયરી", mobile: "7878515174", clientId: "goodluck", key: "123456", blocked: false, expiryDays: 30, deviceLimit: 1, activeDevices: [], paymentsLog: {}, passwordChanged: false };
         await setDoc(doc(window.db, "global_system_jama_udhar_agencies", defaultAg.clientId), defaultAg);
         window.agencies.push(defaultAg);
       }
     } catch(e) {
-      window.agencies = [{ name: "ગુડલક જમા-ઉધાર ડાયરી", mobile: "7878515174", clientId: "goodluck", key: "123456", blocked: false, expiryDays: 30, deviceLimit: 1, activeDevices: [], paymentsLog: {} }];
+      window.agencies = [{ name: "ગુડલક જમા-ઉધાર ડાયરી", mobile: "7878515174", clientId: "goodluck", key: "123456", blocked: false, expiryDays: 30, deviceLimit: 1, activeDevices: [], paymentsLog: {}, passwordChanged: false }];
     }
   }
 
@@ -520,7 +531,8 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
       expiryDays: expiryDays,
       deviceLimit: deviceLimit,
       activeDevices: oldAg ? (oldAg.activeDevices || []) : [],
-      paymentsLog: oldAg ? (oldAg.paymentsLog || {}) : {}
+      paymentsLog: oldAg ? (oldAg.paymentsLog || {}) : {},
+      passwordChanged: oldAg ? (oldAg.passwordChanged || false) : false
     };
 
     if(originalId && originalId !== clientId){
@@ -585,7 +597,7 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
             <b>${ag.name}</b> ${isBlocked}
           </div>
           <div style="font-size:11px; color:#555; margin-top:2px;">
-            🔑 ID: <code>${ag.clientId}</code> | Pass: <code>${ag.key}</code><br>
+            🔑 ID: <code>${ag.clientId}</code> | Pass (માસ્ટર કી): <code style="color:#d9534f; font-weight:bold;">${ag.key}</code><br>
             📞 ${ag.mobile} | ⏱️ લાઈસન્સ દિવસો: ${ag.expiryDays || 30} | 📱 યુઝર્સ: ${ag.activeDevices?.length || 0}/${ag.deviceLimit || 1}
           </div>
           <div style="display:flex; gap:4px; margin-top:6px; flex-wrap:wrap;">
@@ -689,16 +701,43 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
         await setDoc(doc(window.db, "global_system_jama_udhar_agencies", found.clientId), found);
       }
 
-      localStorage.setItem("jama_udhar_active_key", found.clientId || found.key);
-      window.activeAgencyKey = found.clientId || found.key;
-      document.getElementById("authScreen").classList.add("hidden");
-      document.getElementById("mainAppContainer").classList.remove("hidden");
-      await window.initFirebaseApp(found);
-      alert(`✅ સ્વાગત છે, ${found.name}!`);
+      if(!found.passwordChanged){
+        window.tempLoggingAgency = found;
+        document.getElementById("changePasswordModal").classList.remove("hidden");
+        return;
+      }
+
+      window.completeSuccessfulLogin(found);
     } else {
       alert("❌ ખોટો Client ID અથવા પાસવર્ડ!");
     }
   });
+
+  document.getElementById("saveNewPasswordBtn").addEventListener("click", async function(){
+    let newPass = document.getElementById("newPasswordInput").value.trim();
+    if(!newPass || newPass.length < 4){ alert("કૃપા કરીને ઓછામાં ઓછા 4 આંકડાનો નવો પાસવર્ડ નાખો."); return; }
+    
+    if(window.tempLoggingAgency){
+      window.tempLoggingAgency.key = newPass;
+      window.tempLoggingAgency.passwordChanged = true;
+      await setDoc(doc(window.db, "global_system_jama_udhar_agencies", window.tempLoggingAgency.clientId), window.tempLoggingAgency);
+      document.getElementById("changePasswordModal").classList.add("hidden");
+      
+      // Clean alert without mentioning master key
+      alert("✅ નવો પાસવર્ડ સફળતાપૂર્વક સેટ થઈ ગયો છે!");
+      
+      window.completeSuccessfulLogin(window.tempLoggingAgency);
+    }
+  });
+
+  window.completeSuccessfulLogin = function(found){
+    localStorage.setItem("jama_udhar_active_key", found.clientId || found.key);
+    window.activeAgencyKey = found.clientId || found.key;
+    document.getElementById("authScreen").classList.add("hidden");
+    document.getElementById("mainAppContainer").classList.remove("hidden");
+    window.initFirebaseApp(found);
+    alert(`✅ સ્વાગત છે, ${found.name}!`);
+  }
 
   document.getElementById("logoutBtn").addEventListener("click", function(){
     localStorage.removeItem("jama_udhar_active_key");
@@ -1421,7 +1460,6 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     alert("✅ રકમ સફળતાપૂર્વક જમા થઈ ગઈ અને WhatsApp મોકલવામાં આવ્યો!");
   }
 
-  // 🛠️ ADDED FUNCTION TO DELETE PAYMENT ENTRY DIRECTLY
   window.deletePaymentRecord = async function(mobile, paymentIndex){
     if(!confirm("આ જમા થયેલી રકમની એન્ટ્રી ડિલીટ કરવી છે?")) return;
     if(window.currentAgencyData.paymentsLog && window.currentAgencyData.paymentsLog[mobile]){
