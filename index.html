@@ -417,7 +417,7 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
         full: `${d}/${m}/${y} (${dayStr}), સમય: ${timeStr}`
       };
     } catch(e) {
-      return { date: "12/09/2026", day: "શનિવાર", time: "08:37 AM", full: "12/09/2026 (શનિવાર), સમય: 08:37 AM" };
+      return { date: "12/09/2026", day: "શનિવાર", time: "08:46 AM", full: "12/09/2026 (શનિવાર), સમય: 08:46 AM" };
     }
   }
 
@@ -441,12 +441,12 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
       snap.forEach(docSnap => { window.agencies.push(docSnap.data()); });
 
       if(window.agencies.length === 0){
-        let defaultAg = { name: "ગુડલક જમા-ઉધાર ડાયરી", mobile: "7878515174", clientId: "goodluck", key: "123456", blocked: false, expiryDays: 30, deviceLimit: 1, activeDevices: [], paymentsLog: {}, passwordChanged: false };
+        let defaultAg = { name: "ગુડલક જમા-ઉધાર ડાયરી", mobile: "7878515174", clientId: "goodluck", key: "123456", blocked: false, expiryDays: 30, startDate: new Date().toISOString(), deviceLimit: 1, activeDevices: [], paymentsLog: {}, passwordChanged: false };
         await setDoc(doc(window.db, "global_system_jama_udhar_agencies", defaultAg.clientId), defaultAg);
         window.agencies.push(defaultAg);
       }
     } catch(e) {
-      window.agencies = [{ name: "ગુડલક જમા-ઉધાર ડાયરી", mobile: "7878515174", clientId: "goodluck", key: "123456", blocked: false, expiryDays: 30, deviceLimit: 1, activeDevices: [], paymentsLog: {}, passwordChanged: false }];
+      window.agencies = [{ name: "ગુડલક જમા-ઉધાર ડાયરી", mobile: "7878515174", clientId: "goodluck", key: "123456", blocked: false, expiryDays: 30, startDate: new Date().toISOString(), deviceLimit: 1, activeDevices: [], paymentsLog: {}, passwordChanged: false }];
     }
   }
 
@@ -529,6 +529,7 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
       key, 
       blocked: oldAg ? oldAg.blocked : false, 
       expiryDays: expiryDays,
+      startDate: oldAg && oldAg.startDate ? oldAg.startDate : new Date().toISOString(),
       deviceLimit: deviceLimit,
       activeDevices: oldAg ? (oldAg.activeDevices || []) : [],
       paymentsLog: oldAg ? (oldAg.paymentsLog || {}) : {},
@@ -591,14 +592,25 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
 
     list.forEach(ag => {
       let isBlocked = ag.blocked ? `<span style="color:red; font-weight:bold;">[બ્લોક કરેલ]</span>` : `<span style="color:green; font-weight:bold;">[ચાલુ]</span>`;
+      
+      // ઓટો-કેલ્ક્યુલેટેડ બાકી દિવસો કાઉન્ટ કરો
+      let calcDays = ag.expiryDays || 30;
+      if(ag.startDate){
+        let start = new Date(ag.startDate);
+        let now = new Date();
+        let diffTime = now - start;
+        let diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        calcDays = Math.max(0, (ag.expiryDays || 30) - diffDays);
+      }
+
       container.innerHTML += `
         <div style="background:#f8f9fa; border:1px solid #ddd; padding:8px; border-radius:6px; margin-bottom:6px;">
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <b>${ag.name}</b> ${isBlocked}
           </div>
           <div style="font-size:11px; color:#555; margin-top:2px;">
-            🔑 ID: <code>${ag.clientId}</code> | Pass (માસ્ટર કી): <code style="color:#d9534f; font-weight:bold;">${ag.key}</code><br>
-            📞 ${ag.mobile} | ⏱️ લાઈસન્સ દિવસો: ${ag.expiryDays || 30} | 📱 યુઝર્સ: ${ag.activeDevices?.length || 0}/${ag.deviceLimit || 1}
+            🔑 ID: <code>${ag.clientId}</code> | Pass: <code style="color:#d9534f; font-weight:bold;">${ag.key}</code><br>
+            📞 ${ag.mobile} | ⏱️ બાકી દિવસો: <b style="color:blue;">${calcDays} દિવસ</b> | 📱 યુઝર્સ: ${ag.activeDevices?.length || 0}/${ag.deviceLimit || 1}
           </div>
           <div style="display:flex; gap:4px; margin-top:6px; flex-wrap:wrap;">
             <button class="btn btn-primary" type="button" style="font-size:10px; padding:3px 6px; background:#0d6efd;" onclick="editAgencyFromAdmin('${ag.clientId}')">✏️ એડિટ</button>
@@ -620,6 +632,7 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     let ag = window.agencies.find(a => a.clientId === clientId);
     if(ag){
       ag.expiryDays = Math.max(0, (parseInt(ag.expiryDays) || 30) + days);
+      ag.startDate = new Date().toISOString(); // રીસેટ સ્ટાર્ટ ડેટ જેથી નવા દિવસો એડ થાય
       await setDoc(doc(window.db, "global_system_jama_udhar_agencies", clientId), ag);
       window.loadAgencyListInAdmin();
       alert(`✅ લાઈસન્સ સમય અપડેટ થયો!`);
@@ -750,7 +763,18 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     window.settings.whatsapp = agencyObj.mobile;
     document.getElementById("agencyTitle").innerText = window.settings.name;
     document.getElementById("agencyPhoneHeader").innerText = "📞 " + window.settings.whatsapp;
-    document.getElementById("agencyExpiryInfo").innerText = `${agencyObj.expiryDays || 30} દિવસ બાકી`;
+    
+    // ઓટો-કેલ્ક્યુલેટેડ બાકી દિવસો હેડર માટે
+    let calcDays = agencyObj.expiryDays || 30;
+    if(agencyObj.startDate){
+      let start = new Date(agencyObj.startDate);
+      let now = new Date();
+      let diffTime = now - start;
+      let diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      calcDays = Math.max(0, (agencyObj.expiryDays || 30) - diffDays);
+    }
+    document.getElementById("agencyExpiryInfo").innerText = `${calcDays} દિવસ બાકી`;
+
     await window.loadDataFromFirebase();
     window.renderShortcuts();
     window.loadLedger();
@@ -1301,7 +1325,6 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     alert("✅ ઓર્ડર સફળતાપૂર્વક અપડેટ થઈ ગયો!");
   }
 
-  // સંપૂર્ણ સુધારેલું સ્ટેટમેન્ટ ફંક્શન જેમાં આંશિક જમા રકમ બાદ થઈને સાચી બાકી રકમ બતાવશે
   window.openCustomerStatement = function(mobile){
     let groupRecs = window.ledger.filter(x => x.mobile === mobile && !x.deleted);
     if(groupRecs.length === 0) return;
@@ -1454,12 +1477,12 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     }
 
     let storeKey = window.currentAgencyData.clientId || window.currentAgencyData.key;
-    await setDoc(doc(window.db, `jama_udhar_${storeKey}`, storeKey), window.currentAgencyData); // Fixed save path reference
+    await setDoc(doc(window.db, "global_system_jama_udhar_agencies", storeKey), window.currentAgencyData);
     window.loadLedger();
 
     let codeText = c.shortCode ? ` [કોડ: ${c.shortCode}]` : '';
     let msg = `નમસ્કાર 🙏 *${c.custName}* (${c.mobile})${codeText},\n\nતમારા હિસ્સામાંથી ₹${payAmt.toFixed(2)} જમા (Paid) થઈ ગયા છે.\n📅 તારીખ: ${dt.date} (${dt.day}), સમય: ${dt.time}\n🔴 *બાકી રકમ: ₹${newNetBaki.toFixed(2)}*\n\n*${window.settings.name}*`;
-    window.open(`https://wa.me/91${c.mobile}?text=` + encodeURIComponent(msg), "_blank");
+    window.open(`https://wa.me/91${mobile}?text=` + encodeURIComponent(msg), "_blank");
     alert("✅ રકમ સફળતાપૂર્વક જમા થઈ ગઈ અને WhatsApp મોકલવામાં આવ્યો!");
   }
 
