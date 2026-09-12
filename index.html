@@ -417,7 +417,7 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
         full: `${d}/${m}/${y} (${dayStr}), સમય: ${timeStr}`
       };
     } catch(e) {
-      return { date: "08/09/2026", day: "મંગળવાર", time: "03:18 PM", full: "08/09/2026 (મંગળવાર), સમય: 03:18 PM" };
+      return { date: "12/09/2026", day: "શનિવાર", time: "08:16 AM", full: "12/09/2026 (શનિવાર), સમય: 08:16 AM" };
     }
   }
 
@@ -723,7 +723,6 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
       await setDoc(doc(window.db, "global_system_jama_udhar_agencies", window.tempLoggingAgency.clientId), window.tempLoggingAgency);
       document.getElementById("changePasswordModal").classList.add("hidden");
       
-      // Clean alert without mentioning master key
       alert("✅ નવો પાસવર્ડ સફળતાપૂર્વક સેટ થઈ ગયો છે!");
       
       window.completeSuccessfulLogin(window.tempLoggingAgency);
@@ -1128,6 +1127,11 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
       let effectivePaid = activeBillsCount === 0 ? 0 : custPayments.reduce((s, p) => s + parseFloat(p.amount || 0), 0);
       let netCustBaki = Math.max(0, totalCustBills - effectivePaid);
 
+      let visibleRecords = group.records.slice().reverse();
+      if (netCustBaki === 0 && visibleRecords.length > 0) {
+        visibleRecords = [visibleRecords[0]];
+      }
+
       let masterActions = "";
       if(window.ledgerTab !== 'deleted'){
         masterActions = `
@@ -1154,7 +1158,7 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
           });
         }
       } else {
-        group.records.slice().reverse().forEach(rec => {
+        visibleRecords.forEach(rec => {
           let amt = parseFloat(rec.amount || 0);
           if(window.ledgerTab === 'baki' && netCustBaki <= 0 && window.ledgerTab !== 'deleted') return;
 
@@ -1297,6 +1301,7 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     alert("✅ ઓર્ડર સફળતાપૂર્વક અપડેટ થઈ ગયો!");
   }
 
+  // સુધારેલું સ્ટેટમેન્ટ ફંક્શન જેથી ક્લિયર થયેલ બિલ પરફેક્ટ દેખાય
   window.openCustomerStatement = function(mobile){
     let groupRecs = window.ledger.filter(x => x.mobile === mobile);
     if(groupRecs.length === 0) return;
@@ -1311,9 +1316,10 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
       let amt = parseFloat(r.amount || 0);
       
       if(r.deleted){
+        // જો બિલ પેમેન્ટ થઈને ક્લિયર થયું હોય તો તેને જમા થયેલ બિલ તરીકે બતાવવું, ડિલીટ નહીં
         body.innerHTML += `
-          <div style="background:#ffebee; border:2px solid #ef5350; padding:8px; border-radius:6px; margin-bottom:6px;">
-            <div style="color:#c62828; font-weight:bold; font-size:13px; margin-bottom:2px;">🗑️ ડિલીટ થયેલ એન્ટ્રી</div>
+          <div style="background:#e8f5e9; border:1px solid #c8e6c9; padding:8px; border-radius:6px; margin-bottom:6px;">
+            <div style="color:#198754; font-weight:bold; font-size:12px; margin-bottom:2px;">🟢 જમા થઈ ગયેલ બિલ (Paid)</div>
             ▪️ ${r.date} (${r.day}), ${r.time}<br>
             📦 ${r.itemDesc}<br>
             💰 રકમ: ₹${amt.toFixed(2)}
@@ -1449,11 +1455,20 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
       time: dt.time
     });
 
+    let newNetBaki = Math.max(0, netBaki - payAmt);
+
+    if(newNetBaki === 0){
+      for(let r of groupRecs){
+        r.deleted = true;
+        await window.saveLedgerToFirebase(r);
+      }
+      window.currentAgencyData.paymentsLog[mobile] = [];
+    }
+
     let storeKey = window.currentAgencyData.clientId || window.currentAgencyData.key;
     await setDoc(doc(window.db, "global_system_jama_udhar_agencies", storeKey), window.currentAgencyData);
     window.loadLedger();
 
-    let newNetBaki = Math.max(0, netBaki - payAmt);
     let codeText = c.shortCode ? ` [કોડ: ${c.shortCode}]` : '';
     let msg = `નમસ્કાર 🙏 *${c.custName}* (${c.mobile})${codeText},\n\nતમારા હિસ્સામાંથી ₹${payAmt.toFixed(2)} જમા (Paid) થઈ ગયા છે.\n📅 તારીખ: ${dt.date} (${dt.day}), સમય: ${dt.time}\n🔴 *બાકી રકમ: ₹${newNetBaki.toFixed(2)}*\n\n*${window.settings.name}*`;
     window.open(`https://wa.me/91${c.mobile}?text=` + encodeURIComponent(msg), "_blank");
